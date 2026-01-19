@@ -1037,5 +1037,30 @@ function stripTags(html){
 show("create");
 renderCreate();
 </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+
+  // Firebase-config (die jij al had)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDexeK2_ZkUOHfa8jV5nDEoDQgXoE7fV3c",
+    authDomain: "taakplanner-b0236.firebaseapp.com",
+    projectId: "taakplanner-b0236",
+    storageBucket: "taakplanner-b0236.firebasestorage.app",
+    messagingSenderId: "131823414976",
+    appId: "1:131823414976:web:78b6037693d247e9680725"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  console.log("Firebase geladen");
+</script>
 </body>
 </html>
