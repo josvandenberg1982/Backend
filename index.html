@@ -8,7 +8,7 @@
 <style>
  :root{
    --border:#ddd;
-   --muted:#666;
+   --muted:#666;a
    --bg:#fff;
    --soft:#fafafa;
    --soft2:#f6f7f8;
@@ -1277,20 +1277,26 @@ function renderWeek(){
              <div style="flex:1; min-width:0;">
                <div class="week-task-title">${escapeHtml(t.title)}</div>
 
-               <div class="week-task-meta">
-                 ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
-                 <span class="pill">${escapeHtml(t.priority)}</span>
-                 <span class="pill">${escapeHtml(t.status)}</span>
-                 <span class="pill">CL ${progText}</span>
-                 ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
-                 ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
-               </div>
-             </div>
-             <div class="small muted" style="white-space:nowrap;">▾</div>
-           </div>
-         </summary>
+              <div class="week-task-meta">
+                ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
+                ${t.notes ? `<span class="pill">Opmerking</span>` : ``}
+                ${prog.total ? `<span class="pill">CL ${progText}</span>` : ``}
+              </div>
+            </div>
+            <div class="small muted" style="white-space:nowrap;">▾</div>
+          </div>
+        </summary>
 
-         ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
+        <div class="week-task-meta" style="margin-top:8px;">
+          ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
+          <span class="pill">${escapeHtml(t.priority)}</span>
+          <span class="pill">${escapeHtml(t.status)}</span>
+          <span class="pill">CL ${progText}</span>
+          ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
+          ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
+        </div>
+
+        ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
 
          ${(t.checklist||[]).length === 0 ? `` : `
            <div class="week-cl">
