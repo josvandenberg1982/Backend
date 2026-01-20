@@ -25,6 +25,7 @@
    --primary:#2563eb;
    --primary-hover:#1d4ed8;
    --primary-press:#1e40af;
+   --week-title-size:18px;
  }
 
  * { box-sizing:border-box; }
@@ -218,7 +219,7 @@
    gap:10px;
    align-items:baseline;
  }
- .week-day-head .week-day-name{ font-size:16px; font-weight:700; }
+ .week-day-head .week-day-name{ font-size:var(--week-title-size); font-weight:700; }
  .week-day-head .week-day-date{ font-size:12px; color:var(--muted); }
  .week-day-body{ padding:10px 10px 12px 10px; }
  .week-empty{
@@ -240,7 +241,7 @@
 
  .week-task-title {
    font-weight: 750;
-   font-size: 16px;
+   font-size: var(--week-title-size);
    line-height: 1.25;
    margin: 0;
    word-break: break-word;
