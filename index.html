@@ -1,22 +1,133 @@
-<html>
+<!doctype html>
+<html lang="nl">
 <head>
-    <title>My Website</title>
-    <style>
-        .tab {
-            display: inline-block;
-            padding: 10px;
-        }
-        .active {
-            background-color: blue;
-            color: white;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+<title>Taakplanner</title>
+
+<style>
+  :root {
+    --border: #ddd;
+    --muted: #666;
+    --bg: #fff;
+    --soft: #fafafa;
+    --soft2: #f6f7f8;
+    --danger: #b00020;
+    --warn: #b36b00;
+    --ok: #0b7a3b;
+    --radius: 16px;
+    --shadow: 0 1px 0 rgba(0, 0, 0, .03);
+    --card-border: #e7e7e7;
+    --nav-h: 56px;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-press: #1e40af;
+    --active-tab-bg: #ff0000; /* New color for active tab */
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: #111;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  nav {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+    min-height: var(--nav-h);
+    align-items: center;
+  }
+
+  section {
+    padding: 12px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  nav .btn {
+    background: transparent;
+    border: none;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: var(--radius);
+  }
+
+  nav .btn.active-tab {
+    background-color: var(--active-tab-bg);
+    font-weight: bold;
+  }  /* Updated styles for active tab */
+
+</style>
+<script>
+  function show(id) {
+    document.querySelectorAll("section").forEach((s) => (s.hidden = true));
+    const el = document.getElementById(id);
+    if (el) el.hidden = false;
+
+    document.querySelectorAll("nav .btn").forEach((btn) => btn.classList.remove("active-tab"));
+    const activeBtn = document.querySelector(`nav .btn[onclick="show('${id}')"]`);
+    if (activeBtn) activeBtn.classList.add("active-tab");
+
+    if (id === "tasks") renderTasks();
+    if (id === "week") renderWeek();
+    if (id === "settings") renderSettings();
+    if (id === "create") renderCreate();
+  }
+</script>
 </head>
 <body>
-    <div class="tabs">
-        <div class="tab active">Home</div>
-        <div class="tab">About</div>
-        <div class="tab">Contact</div>
+
+<nav>
+  <button class="btn" type="button" onclick="show('create')">Nieuwe taak</button>
+  <button class="btn" type="button" onclick="show('tasks')">Takenlijst</button>
+  <button class="btn" type="button" onclick="show('week')">Week</button>
+  <button class="btn" type="button" onclick="show('settings')">Settings</button>
+</nav>
+
+<section id="authGate" style="padding:12px; max-width:520px; margin:0 auto;">
+  <div class="card">
+    <div class="card-head"><strong>Inloggen</strong></div>
+    <div class="card-pad">
+      <label>E-mail</label>
+      <input id="authEmail" type="email" placeholder="jij@domein.nl" autocomplete="email">
+
+      <label>Wachtwoord</label>
+      <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password">
+
+      <div class="row" style="margin-top:6px;">
+        <button class="btn btn-primary" type="button" id="btnLogin">Login</button>
+        <button class="btn" type="button" id="btnSignup">Account maken</button>
+      </div>
+
+      <button class="btn" type="button" id="btnLogout" hidden>Logout</button>
+
+      <div id="authStatus" class="small muted" style="margin-top:8px;"></div>
+      <hr>
+      <div class="small muted">
+        Tip: Als je later via GitHub Pages opent, moet je in Firebase bij Authentication → Authorized domains ook
+        jouw <code>&lt;username&gt;.github.io</code> toevoegen.
+      </div>
     </div>
+  </div>
+</section>
+
+<!-- Other sections remain unchanged -->
 </body>
 </html>
