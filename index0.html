@@ -1,1 +1,1287 @@
-r
+<!doctype html>
+
+<html lang="nl">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+
+ 
+
+<title>Taakplanner</title>
+
+ 
+
+<style>
+
+ :root{
+
+   --border:#ddd;
+
+   --muted:#666;
+
+   --bg:#fff;
+
+   --soft:#fafafa;
+
+   --soft2:#f6f7f8;
+
+   --danger:#b00020;
+
+   --warn:#b36b00;
+
+   --ok:#0b7a3b;
+
+ 
+
+   --radius:16px;
+
+   --shadow: 0 1px 0 rgba(0,0,0,.03);
+
+   --card-border:#e7e7e7;
+
+ 
+
+   --nav-h:56px;
+
+ 
+
+   --primary:#2563eb;
+
+   --primary-hover:#1d4ed8;
+
+   --primary-press:#1e40af;
+
+ }
+
+ 
+
+ * { box-sizing:border-box; }
+
+ html, body { height:100%; }
+
+ body {
+
+   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+   margin:0;
+
+   background:var(--bg);
+
+   color:#111;
+
+   -webkit-text-size-adjust: 100%;
+
+ }
+
+ 
+
+ nav {
+
+   display:none;
+
+   gap:10px;
+
+   padding:10px 12px;
+
+   border-bottom:1px solid var(--border);
+
+   position: sticky;
+
+   top:0;
+
+   background:var(--bg);
+
+   z-index: 10;
+
+   min-height: var(--nav-h);
+
+   align-items:center;
+
+ }
+
+ 
+
+ section { padding:12px; max-width:1100px; margin:0 auto; }
+
+ 
+
+ input, select, textarea, button {
+
+   width:100%;
+
+   margin:6px 0;
+
+   font-size:16px;
+
+ }
+
+ 
+
+ button { cursor:pointer; }
+
+ 
+
+ .small { font-size: 12px; color:var(--muted); }
+
+ .muted { color:var(--muted); }
+
+ 
+
+ .row { display:flex; gap:10px; flex-wrap: wrap; align-items: center; }
+
+ .row > * { flex: 1 1 180px; }
+
+ 
+
+ hr { border:0; border-top:1px solid #eee; margin:12px 0; }
+
+ 
+
+ .card {
+
+   border:1px solid var(--card-border);
+
+   background:#fff;
+
+   border-radius: var(--radius);
+
+   overflow:hidden;
+
+   box-shadow: var(--shadow);
+
+ }
+
+ .card-pad { padding:12px; }
+
+ .card-head {
+
+   padding:10px 12px;
+
+   background:#fff;
+
+   border-bottom:1px solid var(--border);
+
+   display:flex;
+
+   justify-content:space-between;
+
+   gap:10px;
+
+   align-items:baseline;
+
+ }
+
+ .card-head strong { font-size:14px; }
+
+ .card-body { padding:12px; background:var(--soft2); }
+
+ 
+
+ .badge {
+
+   display:inline-block;
+
+   padding:2px 8px;
+
+   border:1px solid #ccc;
+
+   border-radius: 999px;
+
+   font-size: 12px;
+
+   background:#fff;
+
+   line-height: 1.5;
+
+ }
+
+ .pill  {
+
+   display:inline-flex;
+
+   align-items:center;
+
+   gap:6px;
+
+   padding:3px 10px;
+
+   border:1px solid #ccc;
+
+   border-radius: 999px;
+
+   font-size:12px;
+
+   background:#fff;
+
+   margin-right:6px;
+
+   margin-top:6px;
+
+   line-height: 1.4;
+
+ }
+
+ .dot {
+
+   width:10px; height:10px;
+
+   border-radius:999px;
+
+   display:inline-block;
+
+   border:1px solid rgba(0,0,0,.15);
+
+   flex: 0 0 10px;
+
+ }
+
+ 
+
+ .note {
+
+   white-space: pre-wrap;
+
+   background:var(--soft);
+
+   border:1px solid #eee;
+
+   border-radius:14px;
+
+   padding:10px;
+
+   margin-top:8px;
+
+   font-size: 13px;
+
+ }
+
+ 
+
+ .btn {
+
+   border:1px solid #cfcfcf;
+
+   background:#fff;
+
+   border-radius: 14px;
+
+   padding:10px 12px;
+
+ }
+
+ .btn:active { transform: translateY(0.5px); }
+
+ 
+
+ .btn-primary {
+
+   background: var(--primary);
+
+   color: #fff;
+
+   border-color: var(--primary);
+
+   font-weight:700;
+
+   min-height: 54px;
+
+ }
+
+ .btn-primary:hover{
+
+   background: var(--primary-hover);
+
+   border-color: var(--primary-hover);
+
+ }
+
+ .btn-primary:active{
+
+   background: var(--primary-press);
+
+   border-color: var(--primary-press);
+
+ }
+
+ .btn-primary:focus{
+
+   outline: 2px solid rgba(37,99,235,.35);
+
+   outline-offset: 2px;
+
+ }
+
+ 
+
+ .btn-small {
+
+   width:auto;
+
+   padding:8px 10px;
+
+   border-radius:12px;
+
+ }
+
+ nav .btn {
+
+   width:auto;
+
+   margin:0;
+
+   padding:10px 12px;
+
+   border-radius: 14px;
+
+   min-height: 44px;
+
+   white-space:nowrap;
+
+ }
+
+nav .btn-primary { min-height: 48px; }
+
+nav .btn.is-active{
+  background: var(--danger);
+  border-color: var(--danger);
+  color:#fff;
+}
+nav .btn.is-active:hover{
+  background:#8f001a;
+  border-color:#8f001a;
+}
+
+ 
+
+ .unplanned { border-left: 4px solid #c90; }
+
+ .done-row { opacity:.72; }
+
+ .danger { color:var(--danger); border-color: rgba(176,0,32,.35); }
+
+ .warn { color:var(--warn); border-color: rgba(179,107,0,.35); }
+
+ .ok { color:var(--ok); border-color: rgba(11,122,59,.35); }
+
+ 
+
+ .cl-wrap { border:1px solid #eee; border-radius:14px; padding:10px; background:#fff; }
+
+ .cl-head { display:flex; justify-content: space-between; gap:10px; align-items:center; }
+
+ .cl-head strong { font-size: 13px; }
+
+ .cl-list { list-style:none; padding:0; margin:8px 0 0 0; }
+
+ .cl-item { display:flex; gap:8px; align-items:center; padding:6px 0; border-top:1px dashed #eee; }
+
+ .cl-item:first-child { border-top:0; }
+
+ .cl-item input[type="checkbox"] { width:auto; }
+
+ .cl-item .txt { flex:1; }
+
+ .cl-item .done { text-decoration: line-through; color:#777; }
+
+ 
+
+ .mini-row { display:flex; gap:8px; align-items:center; }
+
+ .mini-row > input { flex:1; margin:0; }
+
+ .mini-row > button { width:auto; margin:0; }
+
+ 
+
+ .week-grid{
+
+   display:grid;
+
+   grid-template-columns: 1fr;
+
+   gap:12px;
+
+ }
+
+ @media (min-width: 980px){
+
+   .week-grid{
+
+     grid-template-columns: repeat(7, 1fr);
+
+     align-items: start;
+
+   }
+
+ }
+
+ 
+
+ .week-day {
+
+   border:1px solid var(--border);
+
+   background:var(--soft2);
+
+   border-radius: var(--radius);
+
+   overflow:hidden;
+
+ }
+
+ .week-day-head{
+
+   padding:10px 12px;
+
+   background:#fff;
+
+   border-bottom:1px solid var(--border);
+
+   display:flex;
+
+   justify-content:space-between;
+
+   gap:10px;
+
+   align-items:baseline;
+
+ }
+
+ .week-day-head strong{ font-size:14px; }
+
+ .week-day-body{ padding:10px 10px 12px 10px; }
+
+ .week-empty{
+
+   padding:10px;
+
+   border:1px dashed #ddd;
+
+   border-radius:14px;
+
+   background:#fff;
+
+ }
+
+ 
+
+ .week-task {
+
+   background:#fff;
+
+   border:1px solid #e7e7e7;
+
+   border-radius:14px;
+
+   padding:10px;
+
+   margin-top:10px;
+
+   box-shadow: var(--shadow);
+
+ }
+
+ .week-task:first-child{ margin-top:0; }
+
+ 
+
+ .week-task-title {
+
+   font-weight: 750;
+
+   font-size: 16px;
+
+   line-height: 1.25;
+
+   margin-bottom: 6px;
+
+   word-break: break-word;
+
+ }
+
+ 
+
+ .week-task-meta{
+
+   display:flex;
+
+   flex-wrap:wrap;
+
+   gap:6px;
+
+   margin-top:2px;
+
+ }
+
+ 
+
+ .week-cl { margin-top:10px; border-top:1px dashed #eee; padding-top:8px; }
+
+ .week-cl ul { list-style:none; padding:0; margin:0; }
+
+ .week-cl li {
+
+   display:flex;
+
+   gap:8px;
+
+   align-items:flex-start;
+
+   padding: 4px 0;
+
+   font-size: 12px;
+
+   color:#444;
+
+ }
+
+ .week-cl input[type="checkbox"]{ width:auto; margin-top:2px; }
+
+ .week-cl .txt.done { text-decoration: line-through; color:#777; }
+
+ 
+
+ .week-actions{
+
+   display:flex;
+
+   gap:8px;
+
+   flex-wrap:wrap;
+
+   margin-top:10px;
+
+   border-top:1px solid #f1f1f1;
+
+   padding-top:10px;
+
+ }
+
+ .week-actions button{
+
+   flex: 1 1 120px;
+
+   margin:0;
+
+ }
+
+ 
+
+ .pri-High{ border-left: 4px solid rgba(176,0,32,.55); }
+
+ .pri-Medium{ border-left: 4px solid rgba(179,107,0,.55); }
+
+ .pri-Low{ border-left: 4px solid rgba(11,122,59,.45); }
+
+ 
+
+ .task-list { display:flex; flex-direction:column; gap:12px; }
+
+ .task-card { background:#fff; border:1px solid #e7e7e7; border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); }
+
+ .task-card-top { padding:12px; background:#fff; }
+
+ .task-card-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+
+ .task-card-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+ .task-card-actions button { flex:1 1 140px; margin:0; }
+
+ .task-card-edit { padding:12px; background:var(--soft2); border-top:1px solid #eee; }
+
+ details > summary { cursor:pointer; list-style:none; }
+
+ details > summary::-webkit-details-marker { display:none; }
+
+ .summary-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+
+ .summary-row strong { font-size:16px; }
+
+ 
+
+ label { display:block; margin-top:8px; font-size: 13px; color:#333; }
+
+ 
+
+ /* PDF knoppen in Settings */
+
+ .btn-inline {
+
+   width: auto;
+
+   display: inline-flex;
+
+   align-items: center;
+
+   gap: 8px;
+
+   margin: 6px 6px 0 0;
+
+   padding: 10px 12px;
+
+   border-radius: 14px;
+
+   border: 1px solid #cfcfcf;
+
+   background: #fff;
+
+   cursor: pointer;
+
+   white-space: nowrap;
+
+ }
+
+ .btn-inline:active { transform: translateY(0.5px); }
+
+ .btn-inline-primary {
+
+   background: var(--primary);
+
+   border-color: var(--primary);
+
+   color: #fff;
+
+   font-weight: 700;
+
+ }
+
+</style>
+
+</head>
+
+ 
+
+<body>
+
+ 
+
+<nav>
+
+<button class="btn btn-primary" type="button" data-target="create" onclick="show('create')">Nieuwe taak</button>
+
+<button class="btn" type="button" data-target="tasks" onclick="show('tasks')">Takenlijst</button>
+
+<button class="btn" type="button" data-target="week" onclick="show('week')">Week</button>
+
+<button class="btn" type="button" data-target="settings" onclick="show('settings')">Settings</button>
+
+</nav>
+
+ 
+
+<section id="authGate" style="padding:12px; max-width:520px; margin:0 auto;">
+
+ <div class="card">
+
+   <div class="card-head"><strong>Inloggen</strong></div>
+
+   <div class="card-pad">
+
+     <label>E-mail</label>
+
+     <input id="authEmail" type="email" placeholder="jij@domein.nl" autocomplete="email">
+
+ 
+
+     <label>Wachtwoord</label>
+
+     <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password">
+
+ 
+
+     <div class="row" style="margin-top:6px;">
+
+       <button class="btn btn-primary" type="button" id="btnLogin">Login</button>
+
+       <button class="btn" type="button" id="btnSignup">Account maken</button>
+
+     </div>
+
+ 
+
+     <button class="btn" type="button" id="btnLogout" hidden>Logout</button>
+
+ 
+
+     <div id="authStatus" class="small muted" style="margin-top:8px;"></div>
+
+     <hr>
+
+     <div class="small muted">
+
+       Tip: Als je later via GitHub Pages opent, moet je in Firebase bij Authentication → Authorized domains ook
+
+       jouw <code>&lt;username&gt;.github.io</code> toevoegen.
+
+     </div>
+
+   </div>
+
+ </div>
+
+</section>
+
+ 
+
+<section id="create" hidden>
+
+ <div class="card">
+
+   <div class="card-head"><strong>Nieuwe taak</strong></div>
+
+   <div class="card-pad">
+
+     <form onsubmit="addTask(event)">
+
+       <label>Taakomschrijving</label>
+
+       <input id="title" required placeholder="Bijv. offerte maken, engineering, administratie">
+
+ 
+
+       <div class="row">
+
+         <div>
+
+           <label>Project</label>
+
+           <select id="createProject"></select>
+
+         </div>
+
+         <div>
+
+           <label>Prioriteit</label>
+
+           <select id="createPriority">
+
+             <option>High</option>
+
+             <option selected>Medium</option>
+
+             <option>Low</option>
+
+           </select>
+
+         </div>
+
+         <div>
+
+           <label>Schatting (uren)</label>
+
+           <input id="createEstimate" type="number" min="0" step="0.5" value="1">
+
+         </div>
+
+       </div>
+
+ 
+
+       <div class="row">
+
+         <div>
+
+           <label>Datum inplannen</label>
+
+           <input id="createPlanned" type="date">
+
+         </div>
+
+         <div>
+
+           <label>Deadline</label>
+
+           <input id="createDeadline" type="date">
+
+         </div>
+
+       </div>
+
+ 
+
+       <label>Labels (komma-gescheiden)</label>
+
+       <input id="createTags" placeholder="bijv. klant, urgent, inkoop">
+
+ 
+
+       <button class="btn btn-primary" type="submit">Taak toevoegen</button>
+
+     </form>
+
+     <div class="small">Na opslaan ga je automatisch naar de takenlijst.</div>
+
+   </div>
+
+ </div>
+
+</section>
+
+ 
+
+<section id="tasks" hidden>
+
+ <h2>Overall takenlijst</h2>
+
+ 
+
+ <div class="card" style="margin-bottom:12px;">
+
+   <div class="card-head">
+
+     <strong>Filters</strong>
+
+     <span class="small muted">Niet ingepland en nieuwste staan bovenaan.</span>
+
+   </div>
+
+   <div class="card-pad">
+
+     <div class="row">
+
+       <div>
+
+         <label>Zoeken</label>
+
+         <input id="q" placeholder="Zoek in titel/tags/opmerkingen" oninput="renderTasks()">
+
+       </div>
+
+       <div>
+
+         <label>Project</label>
+
+         <select id="fProject" onchange="renderTasks()"></select>
+
+       </div>
+
+       <div>
+
+         <label>Status</label>
+
+         <select id="fStatus" onchange="renderTasks()">
+
+           <option value="">Alle</option>
+
+           <option>Todo</option>
+
+           <option>Planned</option>
+
+           <option>Done</option>
+
+           <option value="Archived">Archived</option>
+
+         </select>
+
+       </div>
+
+       <div>
+
+         <label>Toon Done</label>
+
+         <select id="showDone" onchange="renderTasks()">
+
+           <option value="yes" selected>Ja</option>
+
+           <option value="no">Nee</option>
+
+         </select>
+
+       </div>
+
+     </div>
+
+     <div class="small muted">
+
+       Deadline krijgt een badge (overdue / binnenkort). Bewerken zit per taak in een uitklapblok.
+
+     </div>
+
+   </div>
+
+ </div>
+
+ 
+
+ <div id="taskList" class="task-list"></div>
+
+</section>
+
+ 
+
+<section id="week" hidden>
+
+ <h2 id="weekTitle"></h2>
+
+ 
+
+ <div class="row">
+
+   <button class="btn" type="button" onclick="changeWeek(-1)">← Vorige</button>
+
+   <button class="btn" type="button" onclick="goThisWeek()">Deze week</button>
+
+   <button class="btn" type="button" onclick="changeWeek(1)">Volgende →</button>
+
+ </div>
+
+ 
+
+ <div class="small" style="margin-top:8px;">
+
+   In weekoverzicht kun je checklist-items aanvinken en taken afronden/archiveren.
+
+ </div>
+
+ 
+
+ <div id="weekGrid" class="week-grid" style="margin-top:12px;"></div>
+
+</section>
+
+ 
+
+<section id="settings" hidden>
+
+ <h2>Settings</h2>
+
+ 
+
+ <div class="card">
+
+   <div class="card-head"><strong>Projecten</strong></div>
+
+   <div class="card-pad">
+
+     <div class="row">
+
+       <input id="newProject" placeholder="Nieuw project (naam)">
+
+       <input id="newProjectColor" type="color" value="#4a90e2" title="Kleur">
+
+       <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
+
+     </div>
+
+     <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
+
+     <ul id="projectList"></ul>
+
+   </div>
+
+ </div>
+
+ 
+
+ <div style="height:12px;"></div>
+
+ 
+
+ <div class="card">
+
+   <div class="card-head"><strong>Labels</strong></div>
+
+   <div class="card-pad">
+
+     <div class="row">
+
+       <input id="newLabel" placeholder="Nieuw label (naam)">
+
+       <input id="newLabelColor" type="color" value="#7b7b7b" title="Kleur">
+
+       <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
+
+     </div>
+
+     <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
+
+     <ul id="labelList"></ul>
+
+   </div>
+
+ </div>
+
+ 
+
+ <div style="height:12px;"></div>
+
+ 
+
+ <div class="card">
+
+   <div class="card-head"><strong>Notificatie (later met backend)</strong></div>
+
+   <div class="card-pad">
+
+     <div class="small muted">
+
+       E-mail en tijdstip slaan we alvast op, maar automatische e-mail vereist een backend.
+
+     </div>
+
+ 
+
+     <label>E-mail adres</label>
+
+     <input id="emailTo" placeholder="jij@domein.nl">
+
+ 
+
+     <div class="row">
+
+       <div>
+
+         <label>Uur</label>
+
+         <input id="notifyHour" type="number" min="0" max="23">
+
+       </div>
+
+       <div>
+
+         <label>Minuut</label>
+
+         <input id="notifyMinute" type="number" min="0" max="59">
+
+       </div>
+
+     </div>
+
+ 
+
+     <button class="btn btn-primary" type="button" onclick="saveSettings()">Settings opslaan</button>
+
+   </div>
+
+ </div>
+
+ 
+
+ <div style="height:12px;"></div>
+
+ 
+
+ <div class="card">
+
+   <div class="card-head"><strong>Back-up</strong></div>
+
+   <div class="card-pad">
+
+     <div class="row">
+
+       <button class="btn btn-primary" type="button" onclick="exportCSV()">Export CSV</button>
+
+       <input id="importFile" type="file" accept=".csv,text/csv" onchange="importCSV(event)">
+
+     </div>
+
+     <div class="small muted">
+
+       Export/Import via CSV (in plaats van JSON). Import vervangt je huidige data in deze browser.
+
+     </div>
+
+   </div>
+
+ </div>
+
+ 
+
+ <div style="height:12px;"></div>
+
+ 
+
+ <div class="card">
+
+   <div class="card-head"><strong>Reset</strong></div>
+
+   <div class="card-pad">
+
+     <button class="btn danger" type="button" onclick="resetAll()">Alles wissen (reset)</button>
+
+     <div class="small muted">Let op: dit verwijdert alle taken en settings in je browser.</div>
+
+   </div>
+
+ </div>
+
+</section>
+
+ 
+
+<script>
+
+const KEY = "taskplanner_v8_csv";
+
+ 
+
+/** --------------------------
+
+*  Date helpers (robust local)
+
+*  -------------------------- **/
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+function ymdFromDate(d){
+
+ const x = new Date(d);
+
+ return `${x.getFullYear()}-${pad2(x.getMonth()+1)}-${pad2(x.getDate())}`;
+
+}
+
+function dateFromYMD(ymd){
+
+ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd||""));
+
+ if (!m) return null;
+
+ const y = Number(m[1]), mo = Number(m[2]), da = Number(m[3]);
+
+ const dt = new Date(y, mo-1, da);
+
+ if (dt.getFullYear()!==y || dt.getMonth()!==mo-1 || dt.getDate()!==da) return null;
+
+ dt.setHours(0,0,0,0);
+
+ return dt;
+
+}
+
+function startOfWeek(d){
+
+ const x = new Date(d);
+
+ x.setHours(0,0,0,0);
+
+ const day = (x.getDay() + 6) % 7;
+
+ x.setDate(x.getDate() - day);
+
+ return x;
+
+}
+
+function parseWeek(value){
+
+ if (!value) return startOfWeek(new Date());
+
+ const dt = new Date(value);
+
+ if (isNaN(dt.getTime())) return startOfWeek(new Date());
+
+ return startOfWeek(dt);
+
+}
+
+function clampInt(v, fallback){
+
+ const n = Number(v);
+
+ return Number.isFinite(n) ? n : fallback;
+
+}
+
+function uid(){
+
+ return (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
+
+}
+
+ 
+
+/** --- State --- **/
+
+let state = load();
+
+window.state = state;
+
+ 
+
+function setState(next){
+
+ state = next;
+
+ window.state = next;
+
+}
+
+ 
+
+function defaultState(){
+
+ return {
+
+   tasks: [],
+
+   week: startOfWeek(new Date()).toISOString(),
+
+   projects: [{ name:"Algemeen", color:"#4a90e2" }],
+
+   labels: [],
+
+   settings: { emailTo:"", notifyHour:12, notifyMinute:0 }
+
+ };
+
+}
+
+ 
+
+function normalizeProjects(projects){
+
+ const out = [];
+
+ for (const p of (projects || [])){
+
+   if (typeof p === "string"){
+
+     out.push({ name:p, color:"#4a90e2" });
+
+   } else if (p && typeof p === "object"){
+
+     const name = String(p.name ?? "").trim();
+
+     if (!name) continue;
+
+     out.push({ name, color: String(p.color || "#4a90e2") });
+
+   }
+
+ }
+
+ return out.length ? out : [{ name:"Algemeen", color:"#4a90e2" }];
+
+}
+
+function normalizeLabels(labels){
+
+ const out = [];
+
+ for (const l of (labels || [])){
+
+   if (typeof l === "string"){
+
+     out.push({ name:l, color:"#7b7b7b" });
+
+   } else if (l && typeof l === "object"){
+
+     const name = String(l.name ?? "").trim();
+
+     if (!name) continue;
+
+     out.push({ name, color: String(l.color || "#7b7b7b") });
+
+   }
+
+ }
+
+ const seen = new Set();
+
+ const ded = [];
+
+ for (const l of o…7144 tokens truncated…
