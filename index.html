@@ -2191,14 +2191,9 @@ function drawGantt(doc, projectName, tasks, margin){
  const pageW = doc.internal.pageSize.getWidth();
  const pageH = doc.internal.pageSize.getHeight();
 
- doc.setFont("helvetica","bold");
- doc.setFontSize(16);
- doc.text(`Gantt - ${projectName}`, margin, 55);
-
  const ganttItems = tasks
    .map(t => ({ t, r: taskGanttRange(t) }))
-   .filter(x => x.r)
-   .slice(0, 40);
+   .filter(x => x.r);
 
  if (!ganttItems.length){
    doc.setFont("helvetica","normal");
@@ -2216,82 +2211,115 @@ function drawGantt(doc, projectName, tasks, margin){
  minD = new Date(minD); minD.setHours(0,0,0,0);
  maxD = new Date(maxD); maxD.setHours(0,0,0,0);
 
- const totalDays = Math.max(1, Math.round((maxD - minD) / 86400000));
- const chartX = margin;
- const chartY = 90;
- const chartW = pageW - margin*2;
- const rowH = 14;
+ const maxPlus = new Date(maxD);
+ maxPlus.setDate(maxPlus.getDate() + 1);
 
- doc.setFont("helvetica","normal");
- doc.setFontSize(9);
- doc.text(`Periode: ${minD.toLocaleDateString("nl-NL")} → ${maxD.toLocaleDateString("nl-NL")}`, margin, 75);
+ const totalRangeDays = Math.max(1, Math.round((maxPlus - minD) / 86400000));
+ const windowDays = 21;
+ let pageIndex = 0;
 
- const labelW = 190;
- const barX = chartX + labelW;
- const barW = chartW - labelW;
-
- doc.setDrawColor(220);
- let prevMonth = -1;
- for (let d=0; d<=totalDays; d+=7){
-   const x = barX + (d/totalDays)*barW;
-   doc.line(x, chartY-10, x, pageH - margin);
-   const dt = new Date(minD); dt.setDate(dt.getDate()+d);
-   const month = dt.getMonth();
-   const includeYear = (d === 0) || (month !== prevMonth);
-   prevMonth = month;
-   const txt = fmtGanttTick(dt, includeYear);
-   doc.text(txt, x+2, chartY-12);
- }
-
- let y = chartY;
- doc.setDrawColor(230);
- for (const it of ganttItems){
-   if (y > pageH - margin - 30){
-     doc.addPage();
-     y = margin + 40;
-     doc.setFont("helvetica","bold");
-     doc.setFontSize(12);
-     doc.text(`Gantt (vervolg) - ${projectName}`, margin, margin + 15);
-     y = margin + 35;
-   }
-
-   const t = it.t;
-   const r = it.r;
+ function drawWindowFrame(winStart, winEnd, titleSuffix){
+   doc.setFont("helvetica","bold");
+   doc.setFontSize(16);
+   doc.text(`Gantt - ${projectName}${titleSuffix}`, margin, 55);
 
    doc.setFont("helvetica","normal");
-   doc.setFontSize(8);
-   const label = (t.title || "").slice(0, 65);
-   doc.text(label, chartX, y);
+   doc.setFontSize(9);
+   doc.text(
+     `Periode: ${winStart.toLocaleDateString("nl-NL")} → ${new Date(winEnd.getTime()-86400000).toLocaleDateString("nl-NL")}`,
+     margin,
+     75
+   );
 
-   const sDay = Math.round((r.start - minD)/86400000);
-   const eDay = Math.round((r.end - minD)/86400000);
-   const sx = barX + (sDay/totalDays)*barW;
-   const ex = barX + (eDay/totalDays)*barW;
-   const w = Math.max(2, ex - sx);
+   const chartX = margin;
+   const chartY = 90;
+   const chartW = pageW - margin*2;
+   const labelW = 190;
+   const barX = chartX + labelW;
+   const barW = chartW - labelW;
 
-   const prio = String(t.priority||"Medium");
-   const fill = prio === "High" ? [176,0,32] : (prio === "Low" ? [11,122,59] : [179,107,0]);
-
-   doc.setFillColor(fill[0], fill[1], fill[2]);
-   doc.setDrawColor(200);
-   doc.rect(sx, y-8, w, 9, "F");
-
-   if (t.deadline){
-     const dl = dateFromYMD(t.deadline);
-     if (dl){
-       const dlDay = Math.round((dl - minD)/86400000);
-       const mx = barX + (dlDay/totalDays)*barW;
-       doc.setDrawColor(0);
-       doc.line(mx, y-10, mx, y+2);
+   doc.setDrawColor(220);
+   doc.setFont("helvetica","normal");
+   doc.setFontSize(7);
+   for (let d=0; d<=windowDays; d++){
+     const x = barX + (d/windowDays)*barW;
+     doc.line(x, chartY-10, x, pageH - margin);
+     if (d < windowDays){
+       const dt = new Date(winStart);
+       dt.setDate(dt.getDate() + d);
+       const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+       doc.text(txt, x+1, chartY-12);
      }
    }
 
-   y += rowH;
+   return { chartX, chartY, barX, barW };
  }
 
- doc.setFont("helvetica","normal");
- doc.setFontSize(9);
- doc.text("Legenda: balkkleur = prioriteit (High/Medium/Low). Zwart streepje = deadline.", margin, pageH - margin);
+ for (let offset=0; offset<totalRangeDays; offset+=windowDays){
+   const winStart = new Date(minD);
+   winStart.setDate(winStart.getDate() + offset);
+   const winEnd = new Date(winStart);
+   winEnd.setDate(winEnd.getDate() + windowDays);
+
+   const windowItems = ganttItems.filter(it => it.r.end > winStart && it.r.start < winEnd);
+   if (!windowItems.length) continue;
+
+   if (pageIndex > 0) doc.addPage();
+   pageIndex++;
+   let frame = drawWindowFrame(winStart, winEnd, "");
+
+   let y = frame.chartY;
+   const rowH = 14;
+   doc.setDrawColor(230);
+
+   for (const it of windowItems){
+     if (y > pageH - margin - 30){
+       doc.addPage();
+       frame = drawWindowFrame(winStart, winEnd, " (vervolg)");
+       y = frame.chartY;
+     }
+
+     const t = it.t;
+     const r = it.r;
+
+     const s = r.start < winStart ? winStart : r.start;
+     const e = r.end > winEnd ? winEnd : r.end;
+     const sDay = Math.max(0, Math.round((s - winStart)/86400000));
+     const eDay = Math.max(0, Math.round((e - winStart)/86400000));
+
+     doc.setFont("helvetica","normal");
+     doc.setFontSize(8);
+     const label = (t.title || "").slice(0, 65);
+     doc.text(label, frame.chartX, y);
+
+     const sx = frame.barX + (sDay/windowDays)*frame.barW;
+     const ex = frame.barX + (eDay/windowDays)*frame.barW;
+     const w = Math.max(2, ex - sx);
+
+     const prio = String(t.priority||"Medium");
+     const fill = prio === "High" ? [176,0,32] : (prio === "Low" ? [11,122,59] : [179,107,0]);
+
+     doc.setFillColor(fill[0], fill[1], fill[2]);
+     doc.setDrawColor(200);
+     doc.rect(sx, y-8, w, 9, "F");
+
+     if (t.deadline){
+       const dl = dateFromYMD(t.deadline);
+       if (dl && dl >= winStart && dl < winEnd){
+         const dlDay = Math.round((dl - winStart)/86400000);
+         const mx = frame.barX + (dlDay/windowDays)*frame.barW;
+         doc.setDrawColor(0);
+         doc.line(mx, y-10, mx, y+2);
+       }
+     }
+
+     y += rowH;
+   }
+
+   doc.setFont("helvetica","normal");
+   doc.setFontSize(9);
+   doc.text("Legenda: balkkleur = prioriteit (High/Medium/Low). Zwart streepje = deadline.", margin, pageH - margin);
+ }
 }
 </script>
 
