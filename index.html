@@ -554,6 +554,22 @@
  <h2>Settings</h2>
 
  <div class="card">
+   <div class="card-head"><strong>Totale planning</strong></div>
+   <div class="card-pad">
+     <button class="btn-inline btn-inline-primary" type="button"
+             onclick="generateTotalPDF({ includeGantt:true })">
+       Totale planning PDF + Gantt
+     </button>
+     <button class="btn-inline" type="button"
+             onclick="generateTotalPDF({ includeGantt:false })">
+       Totale planning PDF
+     </button>
+   </div>
+ </div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
    <div class="card-head"><strong>Projecten</strong></div>
    <div class="card-pad">
      <div class="row">
@@ -1841,6 +1857,11 @@ function fmtDateNL(ymd){
  const d = dateFromYMD(ymd);
  return d ? d.toLocaleDateString("nl-NL") : (ymd || "");
 }
+function fmtGanttTick(dt, includeYear){
+ const opts = { day:"2-digit", month:"short" };
+ if (includeYear) opts.year = "numeric";
+ return dt.toLocaleDateString("nl-NL", opts);
+}
 function taskGanttRange(t){
  const start = dateFromYMD(t.planned) || dateFromYMD(t.deadline);
  const end = dateFromYMD(t.deadline) || dateFromYMD(t.planned);
@@ -1854,6 +1875,146 @@ function taskGanttRange(t){
  }
  e.setDate(e.getDate() + 1);
  return { start: s, end: e };
+}
+
+function generateTotalPDF(opts){
+ const includeGantt = !!(opts && opts.includeGantt);
+
+ const tasks = (state.tasks || []).filter(t => t.status !== "Archived");
+ const all = (state.tasks || []);
+
+ if (!tasks.length && !all.length){
+   alert("Geen taken gevonden.");
+   return;
+ }
+
+ if (!window.jspdf || !window.jspdf.jsPDF){
+   alert("PDF library niet geladen. Check je internetverbinding of de CDN scripts.");
+   return;
+ }
+
+ const { jsPDF } = window.jspdf;
+ const doc = new jsPDF({ unit:"pt", format:"a4" });
+
+ const pageW = doc.internal.pageSize.getWidth();
+ const pageH = doc.internal.pageSize.getHeight();
+ const margin = 40;
+
+ doc.setFont("helvetica","bold");
+ doc.setFontSize(18);
+ doc.text("Totale planning", margin, 55);
+
+ doc.setFont("helvetica","normal");
+ doc.setFontSize(10);
+ doc.text(`Gegenereerd: ${new Date().toLocaleString("nl-NL")}`, margin, 72);
+
+ doc.setDrawColor(0);
+ doc.setFillColor(...hexToRgb("#2563eb"));
+ doc.rect(pageW - margin - 80, 40, 80, 10, "F");
+
+ const stats = {
+   total: all.length,
+   active: (all.filter(t => t.status !== "Archived")).length,
+   todo: all.filter(t => t.status === "Todo").length,
+   planned: all.filter(t => t.status === "Planned").length,
+   done: all.filter(t => t.status === "Done").length
+ };
+
+ const estTotal = sumHours(all);
+ const estOpen = sumHours(all.filter(t => t.status !== "Done" && t.status !== "Archived"));
+
+ let y = 95;
+ doc.setFontSize(12);
+ doc.setFont("helvetica","bold");
+ doc.text("Samenvatting", margin, y);
+ y += 10;
+
+ doc.setFont("helvetica","normal");
+ doc.setFontSize(10);
+ const lines = [
+   `Totaal taken: ${stats.total} (actief: ${stats.active})`,
+   `Status: Todo ${stats.todo} · Planned ${stats.planned} · Done ${stats.done}`,
+   `Uren (schatting): totaal ${fmtHours(estTotal)} · open ${fmtHours(estOpen)}`
+ ];
+ y += 14;
+ lines.forEach((l, i) => doc.text(l, margin, y + i*14));
+ y += lines.length*14 + 10;
+
+ const rows = sortTasks(tasks).map(t => {
+   const prog = checklistProgress(t);
+   const cl = prog.total ? `${prog.done}/${prog.total}` : "";
+   return [
+     t.title || "",
+     t.project || "",
+     t.status || "",
+     t.priority || "",
+     t.planned ? fmtDateNL(t.planned) : "",
+     t.deadline ? fmtDateNL(t.deadline) : "",
+     (t.estimateHours ?? "") !== "" ? String(t.estimateHours) : "",
+     cl,
+     (t.tags || "")
+   ];
+ });
+
+ doc.setFont("helvetica","bold");
+ doc.setFontSize(12);
+ doc.text("Taken (niet-archived)", margin, y);
+ y += 8;
+
+ doc.autoTable({
+   startY: y + 6,
+   margin: { left: margin, right: margin },
+   head: [["Taak", "Project", "Status", "Prio", "Gepland", "Deadline", "Uren", "CL", "Labels"]],
+   body: rows,
+   styles: { font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+   headStyles: { fillColor: [37, 99, 235], textColor: 255 },
+   columnStyles: {
+     0: { cellWidth: 150 },
+     1: { cellWidth: 70 },
+     2: { cellWidth: 50 },
+     3: { cellWidth: 40 },
+     4: { cellWidth: 60 },
+     5: { cellWidth: 60 },
+     6: { cellWidth: 35, halign:"right" },
+     7: { cellWidth: 30, halign:"center" },
+     8: { cellWidth: 85 }
+   }
+ });
+
+ let afterTableY = doc.lastAutoTable.finalY + 18;
+
+ const withNotes = tasks.filter(t => String(t.notes||"").trim().length > 0).slice(0, 12);
+ if (withNotes.length){
+   if (afterTableY > pageH - 120){
+     doc.addPage();
+     afterTableY = margin;
+   }
+   doc.setFont("helvetica","bold");
+   doc.setFontSize(12);
+   doc.text("Opmerkingen (selectie)", margin, afterTableY);
+   afterTableY += 10;
+
+   doc.setFont("helvetica","normal");
+   doc.setFontSize(9);
+   for (const t of withNotes){
+     const block = `${t.title}: ${String(t.notes).trim()}`;
+     const wrapped = doc.splitTextToSize(block, pageW - margin*2);
+     if (afterTableY + wrapped.length*11 > pageH - margin){
+       doc.addPage();
+       afterTableY = margin;
+     }
+     doc.text(wrapped, margin, afterTableY + 12);
+     afterTableY += wrapped.length*11 + 10;
+   }
+ }
+
+ if (includeGantt){
+   doc.addPage();
+   drawGantt(doc, "Totale planning", tasks, margin);
+ }
+
+ const suffix = includeGantt ? "_gantt" : "";
+ doc.save(`totale_planning${suffix}.pdf`);
 }
 
 function generateProjectPDF(projectName, opts){
@@ -2070,11 +2231,15 @@ function drawGantt(doc, projectName, tasks, margin){
  const barW = chartW - labelW;
 
  doc.setDrawColor(220);
+ let prevMonth = -1;
  for (let d=0; d<=totalDays; d+=7){
    const x = barX + (d/totalDays)*barW;
    doc.line(x, chartY-10, x, pageH - margin);
    const dt = new Date(minD); dt.setDate(dt.getDate()+d);
-   const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+   const month = dt.getMonth();
+   const includeYear = (d === 0) || (month !== prevMonth);
+   prevMonth = month;
+   const txt = fmtGanttTick(dt, includeYear);
    doc.text(txt, x+2, chartY-12);
  }
 
