@@ -254,12 +254,13 @@
  }
  .week-task:first-child{ margin-top:0; }
 
- .week-task-title {
+.week-task-title {
    font-weight: 750;
    font-size: var(--week-title-size);
    line-height: 1.25;
    margin: 0;
-   word-break: break-word;
+   word-break: normal;
+   overflow-wrap: normal;
  }
 
  .week-task-meta{
@@ -1403,6 +1404,13 @@ function renderWeek(){
              </ul>
            </div>
          `}
+
+         <label class="small" style="margin-top:8px;">Datum inplannen</label>
+         <input type="date"
+                value="${escapeAttr(t.planned||"")}"
+                data-taskid="${t.id}"
+                onfocus="rememberDate(this)"
+                onblur="commitDate(this)">
 
          <div class="week-actions">
            <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
