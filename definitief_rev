@@ -474,6 +474,10 @@
            <input id="createPlanned" type="date">
          </div>
          <div>
+           <label>Einddatum planning</label>
+           <input id="createPlannedEnd" type="date">
+         </div>
+         <div>
            <label>Deadline</label>
            <input id="createDeadline" type="date">
          </div>
@@ -755,6 +759,7 @@ function migrateTask(t){
  if (!("tags" in t)) t.tags = "";
  if (!("notes" in t)) t.notes = "";
  if (!("planned" in t)) t.planned = "";
+ if (!("plannedEnd" in t)) t.plannedEnd = "";
  if (!("created" in t)) t.created = Date.now();
  if (!("updated" in t)) t.updated = t.created;
  if (!Array.isArray(t.checklist)) t.checklist = [];
@@ -874,19 +879,20 @@ function addTask(e){
  e.preventDefault();
 
  const planned = (createPlanned.value || "");
- const status = planned ? "Planned" : "Todo";
+  const status = planned ? "Planned" : "Todo";
 
- const t = {
-   id: uid(),
-   title: title.value.trim(),
+  const t = {
+    id: uid(),
+    title: title.value.trim(),
    created: Date.now(),
    updated: Date.now(),
    project: createProject.value || (getProjectNames()[0] || "Algemeen"),
    priority: createPriority.value || "Medium",
    status,
    estimateHours: Number(createEstimate.value || 1),
-   planned,
-   deadline: createDeadline.value || "",
+    planned,
+    plannedEnd: createPlannedEnd.value || "",
+    deadline: createDeadline.value || "",
    tags: (createTags.value || "").trim(),
    notes: "",
    checklist: []
@@ -899,6 +905,7 @@ function addTask(e){
  createPriority.value = "Medium";
  createEstimate.value = 1;
  createPlanned.value = "";
+ createPlannedEnd.value = "";
  createDeadline.value = "";
  createTags.value = "";
 
@@ -937,6 +944,12 @@ function updateTaskField(id, field, value){
    if (!t.planned && t.status === "Planned") t.status = "Todo";
  }
 
+ if (field === "plannedEnd"){
+   if (t.plannedEnd && !t.planned) t.planned = t.plannedEnd;
+   if (t.planned && t.status === "Todo") t.status = "Planned";
+   if (!t.planned && t.status === "Planned") t.status = "Todo";
+ }
+
  if (field === "estimateHours"){
    t.estimateHours = (value === "" || value === null || value === undefined) ? "" : Number(value);
  }
@@ -948,6 +961,21 @@ function updateTaskField(id, field, value){
 function rerenderVisible(){
  if (!document.getElementById("tasks").hidden) renderTasks();
  if (!document.getElementById("week").hidden) renderWeek();
+}
+
+function taskSpansDate(t, ymd){
+ const d = dateFromYMD(ymd);
+ if (!d) return false;
+ const s = dateFromYMD(t.planned);
+ if (!s) return false;
+ const eRaw = dateFromYMD(t.plannedEnd || t.planned);
+ const e = eRaw || s;
+ const sTime = s.getTime();
+ const eTime = e.getTime();
+ const min = Math.min(sTime, eTime);
+ const max = Math.max(sTime, eTime);
+ const dt = d.getTime();
+ return dt >= min && dt <= max;
 }
 
 /** --- Planning date (commit-on-blur) --- **/
@@ -1206,6 +1234,7 @@ function renderTasks(){
                  <span class="pill">${escapeHtml(t.status)}</span>
                  <span class="pill">CL ${progText}</span>
                  ${t.planned ? `<span class="pill">Gepland ${escapeHtml(t.planned)}</span>` : `<span class="pill">Niet ingepland</span>`}
+                 ${t.plannedEnd && t.plannedEnd !== t.planned ? `<span class="pill">Tot ${escapeHtml(t.plannedEnd)}</span>` : ``}
                  ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
                  ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
                </div>
@@ -1277,6 +1306,11 @@ function renderTasks(){
                   onfocus="rememberDate(this)"
                   onblur="commitDate(this)">
 
+           <label>Einddatum planning</label>
+           <input type="date"
+                  value="${escapeAttr(t.plannedEnd||"")}"
+                  onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
+
            <div class="row" style="margin-top:6px;">
              <button class="btn" type="button" onclick="planToday('${t.id}')">Plan vandaag</button>
              <button class="btn" type="button" onclick="clearPlan('${t.id}')">Planning wissen</button>
@@ -1327,7 +1361,7 @@ function renderWeek(){
    const dIso = ymdFromDate(d);
 
    const dayTasks = state.tasks
-     .filter(t => t.planned === dIso && t.status !== "Archived")
+     .filter(t => taskSpansDate(t, dIso) && t.status !== "Archived")
      .sort((a,b) => ((b.created||0)-(a.created||0)));
 
    const dayDiv = document.createElement("div");
@@ -1427,6 +1461,11 @@ function renderWeek(){
                 data-taskid="${t.id}"
                 onfocus="rememberDate(this)"
                 onblur="commitDate(this)">
+
+         <label class="small">Einddatum planning</label>
+         <input type="date"
+                value="${escapeAttr(t.plannedEnd||"")}"
+                onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
 
          <div class="week-actions">
            <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
@@ -1603,7 +1642,7 @@ function csvLine(arr){ return arr.map(csvEscape).join(",") + "\n"; }
 function exportCSV(){
  const header = [
    "TYPE",
-   "id","title","project","priority","status","estimateHours","planned","deadline","tags","notes","created","updated","checklistJson",
+   "id","title","project","priority","status","estimateHours","planned","plannedEnd","deadline","tags","notes","created","updated","checklistJson",
    "name","color",
    "emailTo","notifyHour","notifyMinute"
  ];
@@ -1611,9 +1650,9 @@ function exportCSV(){
  let out = "";
  out += csvLine(header);
 
- out += csvLine([
+  out += csvLine([
    "SETTINGS",
-   "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+   "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
    "", "",
    state.settings.emailTo || "",
    state.settings.notifyHour ?? 12,
@@ -1621,39 +1660,40 @@ function exportCSV(){
  ]);
 
  for (const p of (state.projects||[])){
-   out += csvLine([
-     "PROJECT",
-     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-     p.name || "",
-     p.color || "",
-     "", "", ""
-   ]);
+  out += csvLine([
+    "PROJECT",
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+    p.name || "",
+    p.color || "",
+    "", "", ""
+  ]);
  }
 
  for (const l of (state.labels||[])){
-   out += csvLine([
-     "LABEL",
-     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-     l.name || "",
-     l.color || "",
-     "", "", ""
-   ]);
+  out += csvLine([
+    "LABEL",
+    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+    l.name || "",
+    l.color || "",
+    "", "", ""
+  ]);
  }
 
  for (const t of (state.tasks||[])){
-   out += csvLine([
-     "TASK",
-     t.id || "",
-     t.title || "",
-     t.project || "",
-     t.priority || "",
-     t.status || "",
-     (t.estimateHours ?? ""),
-     t.planned || "",
-     t.deadline || "",
-     t.tags || "",
-     t.notes || "",
-     t.created || "",
+  out += csvLine([
+    "TASK",
+    t.id || "",
+    t.title || "",
+    t.project || "",
+    t.priority || "",
+    t.status || "",
+    (t.estimateHours ?? ""),
+    t.planned || "",
+    t.plannedEnd || "",
+    t.deadline || "",
+    t.tags || "",
+    t.notes || "",
+    t.created || "",
      t.updated || "",
      JSON.stringify(Array.isArray(t.checklist) ? t.checklist : []),
      "", "",
@@ -1765,6 +1805,7 @@ function importCSV(e){
            status: String(row[idx.status] ?? "Todo") || "Todo",
            estimateHours: (row[idx.estimateHours] === "" ? "" : Number(row[idx.estimateHours] ?? 1)),
            planned: String(row[idx.planned] ?? "").trim(),
+           plannedEnd: String(row[idx.plannedEnd] ?? "").trim(),
            deadline: String(row[idx.deadline] ?? "").trim(),
            tags: String(row[idx.tags] ?? "").trim(),
            notes: String(row[idx.notes] ?? ""),
@@ -2224,11 +2265,11 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.text(`Gantt - ${projectName}${titleSuffix}`, margin, 55);
 
    doc.setFont("helvetica","normal");
-   doc.setFontSize(9);
+   doc.setFontSize(8);
    doc.text(
      `Periode: ${winStart.toLocaleDateString("nl-NL")} → ${new Date(winEnd.getTime()-86400000).toLocaleDateString("nl-NL")}`,
      margin,
-     75
+     68
    );
 
    const chartX = margin;
@@ -2268,7 +2309,7 @@ function drawGantt(doc, projectName, tasks, margin){
    pageIndex++;
    let frame = drawWindowFrame(winStart, winEnd, "");
 
-   let y = frame.chartY;
+   let y = frame.chartY + 12;
    const rowH = 14;
    doc.setDrawColor(230);
 
@@ -2276,7 +2317,7 @@ function drawGantt(doc, projectName, tasks, margin){
      if (y > pageH - margin - 30){
        doc.addPage();
        frame = drawWindowFrame(winStart, winEnd, " (vervolg)");
-       y = frame.chartY;
+       y = frame.chartY + 12;
      }
 
      const t = it.t;
