@@ -8,7 +8,7 @@
 <style>
  :root{
    --border:#ddd;
-   --muted:#666;a
+   --muted:#666;
    --bg:#fff;
    --soft:#fafafa;
    --soft2:#f6f7f8;
@@ -261,6 +261,8 @@
  }
  .week-cl-summary li{ margin:2px 0; }
  .week-cl-summary .done{ text-decoration: line-through; color:#777; }
+ .week-cl-summary input[type="checkbox"]{ width:auto; margin-right:6px; }
+ details[open] .week-cl-summary{ display:none; }
 
  .week-cl { margin-top:10px; border-top:1px dashed #eee; padding-top:8px; }
  .week-cl ul { list-style:none; padding:0; margin:0; }
@@ -659,6 +661,7 @@ function uid(){
 /** --- State --- **/
 let state = load();
 window.state = state;
+const openTaskIds = new Set();
 
 function setState(next){
  state = next;
@@ -1056,6 +1059,11 @@ function buildFilters(){
 }
 
 /** --- Render tasks --- **/
+function toggleTaskOpen(id, isOpen){
+ if (isOpen) openTaskIds.add(id);
+ else openTaskIds.delete(id);
+}
+
 function renderTasks(){
  buildFilters();
 
@@ -1106,7 +1114,7 @@ function renderTasks(){
 
    card.innerHTML = `
      <div class="task-card-top">
-       <details>
+       <details ${openTaskIds.has(t.id) ? "open" : ""} ontoggle="toggleTaskOpen('${t.id}', this.open)">
          <summary>
            <div class="summary-row">
              <div style="flex:1; min-width:0;">
@@ -1277,6 +1285,7 @@ function renderWeek(){
 
      const card = document.createElement("div");
      card.className = `week-task pri-${t.priority || "Medium"}`;
+     if (t.status === "Done") card.classList.add("done-row");
 
      card.innerHTML = `
        <details>
@@ -1292,7 +1301,13 @@ function renderWeek(){
               ${(t.checklist||[]).length ? `
                 <ul class="week-cl-summary">
                   ${(t.checklist||[]).map(it => `
-                    <li class="${it.done ? "done" : ""}">${escapeHtml(it.text)}</li>
+                    <li class="${it.done ? "done" : ""}">
+                      <input type="checkbox"
+                             ${it.done ? "checked" : ""}
+                             onclick="event.stopPropagation()"
+                             onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
+                      ${escapeHtml(it.text)}
+                    </li>
                   `).join("")}
                 </ul>
               ` : ``}
@@ -1302,7 +1317,6 @@ function renderWeek(){
         </summary>
 
         <div class="week-task-meta" style="margin-top:8px;">
-          ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
           <span class="pill">${escapeHtml(t.priority)}</span>
           <span class="pill">${escapeHtml(t.status)}</span>
           ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
