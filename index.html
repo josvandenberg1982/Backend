@@ -1023,6 +1023,7 @@ function updateTaskField(id, field, value){
  if (field === "planned"){
    if (t.planned && t.status === "Todo") t.status = "Planned";
    if (!t.planned && t.status === "Planned") t.status = "Todo";
+   bumpWeekendPlanned(t);
  }
 
  if (field === "plannedEnd"){
@@ -1042,6 +1043,30 @@ function updateTaskField(id, field, value){
 function rerenderVisible(){
  if (!document.getElementById("tasks").hidden) renderTasks();
  if (!document.getElementById("week").hidden) renderWeek();
+}
+
+function bumpWeekendPlanned(t){
+ if (!t || !t.planned) return false;
+ if (!(state.settings && state.settings.weekMode === "workweek")) return false;
+ const startDate = dateFromYMD(t.planned);
+ if (!startDate) return false;
+ const day = startDate.getDay();
+ if (day !== 0 && day !== 6) return false;
+
+ const endDate = dateFromYMD(t.plannedEnd || t.planned) || new Date(startDate);
+ const durationDays = Math.round((endDate - startDate) / 86400000);
+ const deltaDays = (day === 0) ? 1 : 2;
+ startDate.setDate(startDate.getDate() + deltaDays);
+ endDate.setDate(endDate.getDate() + deltaDays);
+
+ t.planned = ymdFromDate(startDate);
+ if (t.plannedEnd){
+   t.plannedEnd = ymdFromDate(endDate);
+ } else {
+   t.plannedEnd = durationDays > 0 ? ymdFromDate(endDate) : "";
+ }
+ t.updated = Date.now();
+ return true;
 }
 
 function taskSpansDate(t, ymd){
@@ -1711,11 +1736,21 @@ function removeLabel(name){
 }
 
 function saveSettings(){
+ const prevMode = state.settings.weekMode || "full";
  state.settings.emailTo = (emailTo.value || "").trim();
  state.settings.notifyHour = clampInt(notifyHour.value, 12);
  state.settings.notifyMinute = clampInt(notifyMinute.value, 0);
- state.settings.weekMode = (weekMode.value === "workweek") ? "workweek" : "full";
+ const nextMode = (weekMode.value === "workweek") ? "workweek" : "full";
+ state.settings.weekMode = nextMode;
+ let shifted = false;
+ if (nextMode === "workweek" && prevMode !== "workweek"){
+   for (const t of (state.tasks || [])){
+     if (t.status === "Done" || t.status === "Archived") continue;
+     if (bumpWeekendPlanned(t)) shifted = true;
+   }
+ }
  save();
+ if (shifted) rerenderVisible();
  alert("Settings opgeslagen.");
 }
 
