@@ -847,9 +847,7 @@ function save(){
 
 function weekDate(){ return parseWeek(state.week); }
 function setWeek(d){
- const prev = weekDate();
  const next = startOfWeek(d);
- if (next.getTime() > prev.getTime()) rollOverTasks(prev, next);
  state.week = next.toISOString();
  save();
 }
@@ -857,10 +855,11 @@ function setWeek(d){
 function rollOverTasks(prevWeekStart, newWeekStart){
  const newStartMs = newWeekStart.getTime();
  const isWorkweek = (state.settings && state.settings.weekMode === "workweek");
+ let changed = false;
  for (const t of (state.tasks || [])){
-   if (t.status === "Done" || t.status === "Archived") continue;
-   const planned = dateFromYMD(t.planned);
-   if (!planned) continue;
+  if (t.status === "Done" || t.status === "Archived") continue;
+  const planned = dateFromYMD(t.planned);
+  if (!planned) continue;
 
    const endRaw = dateFromYMD(t.plannedEnd || t.planned);
    let startMs = planned.getTime();
@@ -884,9 +883,10 @@ function rollOverTasks(prevWeekStart, newWeekStart){
          t.plannedEnd = ymdFromDate(endDate);
        } else {
          const durationDays = Math.round((endMs - startMs) / 86400000);
-         t.plannedEnd = durationDays > 0 ? ymdFromDate(endDate) : "";
-       }
-       t.updated = Date.now();
+       t.plannedEnd = durationDays > 0 ? ymdFromDate(endDate) : "";
+      }
+      t.updated = Date.now();
+      changed = true;
      }
    }
 
@@ -904,7 +904,14 @@ function rollOverTasks(prevWeekStart, newWeekStart){
      t.plannedEnd = durationDays > 0 ? ymdFromDate(newEnd) : "";
    }
    t.updated = Date.now();
+   changed = true;
  }
+ return changed;
+}
+
+function autoRollOverByToday(){
+ const todayStart = startOfWeek(new Date());
+ if (rollOverTasks(todayStart, todayStart)) save();
 }
 
 /** --- Navigation --- **/
@@ -1276,6 +1283,7 @@ function enableTitleEdit(e, id, el){
 }
 
 function renderTasks(){
+ autoRollOverByToday();
  buildFilters();
 
  const listEl = document.getElementById("taskList");
@@ -1460,6 +1468,7 @@ function goThisWeek(){
 }
 
 function renderWeek(){
+ autoRollOverByToday();
  const w = weekDate();
  weekTitle.textContent = "Week vanaf " + w.toLocaleDateString();
  weekGrid.innerHTML = "";
