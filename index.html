@@ -1080,6 +1080,50 @@ function toggleTaskOpen(id, isOpen){
  else openTaskIds.delete(id);
 }
 
+function enableTitleEdit(e, id, el){
+ e.stopPropagation();
+ e.preventDefault();
+
+ if (!el || el.dataset.editing === "1") return;
+ const t = state.tasks.find(x=>x.id===id);
+ if (!t) return;
+
+ el.dataset.editing = "1";
+ el.contentEditable = "true";
+ el.focus();
+
+ const sel = window.getSelection();
+ if (sel){
+   const range = document.createRange();
+   range.selectNodeContents(el);
+   sel.removeAllRanges();
+   sel.addRange(range);
+ }
+
+ function finish(saveIt){
+   if (saveIt){
+     const next = (el.textContent || "").trim();
+     if (next) updateTaskField(id, "title", next);
+     else el.textContent = t.title;
+   } else {
+     el.textContent = t.title;
+   }
+   el.contentEditable = "false";
+   delete el.dataset.editing;
+ }
+
+ el.onkeydown = (ev) => {
+   if (ev.key === "Enter"){
+     ev.preventDefault();
+     finish(true);
+   } else if (ev.key === "Escape"){
+     ev.preventDefault();
+     finish(false);
+   }
+ };
+ el.onblur = () => finish(true);
+}
+
 function renderTasks(){
  buildFilters();
 
@@ -1134,7 +1178,11 @@ function renderTasks(){
          <summary>
            <div class="summary-row">
              <div style="flex:1; min-width:0;">
-               <strong style="word-break:break-word;">${escapeHtml(t.title)}</strong>
+               <strong style="word-break:break-word;">
+                 <span class="task-title"
+                       ondblclick="enableTitleEdit(event,'${t.id}', this)"
+                       onclick="event.stopPropagation()">${escapeHtml(t.title)}</span>
+               </strong>
                <div class="task-card-meta">
                  ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ""}
                  <span class="pill">${escapeHtml(t.priority)}</span>
