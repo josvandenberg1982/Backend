@@ -1905,7 +1905,7 @@ function fmtGanttTick(dt, includeYear){
 }
 function taskGanttRange(t){
  const start = dateFromYMD(t.planned) || dateFromYMD(t.deadline);
- const end = dateFromYMD(t.deadline) || dateFromYMD(t.planned);
+ const end = dateFromYMD(t.plannedEnd) || dateFromYMD(t.deadline) || dateFromYMD(t.planned);
  if (!start && !end) return null;
 
  const s = start ? new Date(start) : new Date(end);
