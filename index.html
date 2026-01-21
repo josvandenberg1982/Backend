@@ -212,9 +212,16 @@
    grid-template-columns: 1fr;
    gap:12px;
  }
+ .week-grid.workweek{
+   grid-template-columns: 1fr;
+ }
  @media (min-width: 980px){
    .week-grid{
      grid-template-columns: repeat(7, 1fr);
+     align-items: start;
+   }
+   .week-grid.workweek{
+     grid-template-columns: repeat(5, 1fr);
      align-items: start;
    }
  }
@@ -574,6 +581,20 @@
  <div style="height:12px;"></div>
 
  <div class="card">
+   <div class="card-head"><strong>Weekweergave</strong></div>
+   <div class="card-pad">
+     <label>Toon dagen</label>
+     <select id="weekMode">
+       <option value="full">Volledige week (ma-zo)</option>
+       <option value="workweek">Werkweek (ma-vr)</option>
+     </select>
+     <div class="small muted">Werkweek verbergt zaterdag en zondag in het weekoverzicht.</div>
+   </div>
+ </div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
    <div class="card-head"><strong>Projecten</strong></div>
    <div class="card-pad">
      <div class="row">
@@ -711,7 +732,7 @@ function defaultState(){
    week: startOfWeek(new Date()).toISOString(),
    projects: [{ name:"Algemeen", color:"#4a90e2" }],
    labels: [],
-   settings: { emailTo:"", notifyHour:12, notifyMinute:0 }
+   settings: { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" }
  };
 }
 
@@ -803,10 +824,11 @@ function load(){
    s.projects = normalizeProjects(s.projects);
    s.labels = normalizeLabels(s.labels);
 
-   if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0 };
-   s.settings.notifyHour = clampInt(s.settings.notifyHour, 12);
-   s.settings.notifyMinute = clampInt(s.settings.notifyMinute, 0);
-   s.settings.emailTo = String(s.settings.emailTo ?? "");
+  if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" };
+  s.settings.notifyHour = clampInt(s.settings.notifyHour, 12);
+  s.settings.notifyMinute = clampInt(s.settings.notifyMinute, 0);
+  s.settings.emailTo = String(s.settings.emailTo ?? "");
+  s.settings.weekMode = (s.settings.weekMode === "workweek") ? "workweek" : "full";
 
    state = s;
    s.tasks = s.tasks.map(migrateTask);
@@ -824,7 +846,66 @@ function save(){
 }
 
 function weekDate(){ return parseWeek(state.week); }
-function setWeek(d){ state.week = startOfWeek(d).toISOString(); save(); }
+function setWeek(d){
+ const prev = weekDate();
+ const next = startOfWeek(d);
+ if (next.getTime() > prev.getTime()) rollOverTasks(prev, next);
+ state.week = next.toISOString();
+ save();
+}
+
+function rollOverTasks(prevWeekStart, newWeekStart){
+ const newStartMs = newWeekStart.getTime();
+ const isWorkweek = (state.settings && state.settings.weekMode === "workweek");
+ for (const t of (state.tasks || [])){
+   if (t.status === "Done" || t.status === "Archived") continue;
+   const planned = dateFromYMD(t.planned);
+   if (!planned) continue;
+
+   const endRaw = dateFromYMD(t.plannedEnd || t.planned);
+   let startMs = planned.getTime();
+   let endMs = (endRaw || planned).getTime();
+   if (endMs < startMs){
+     const tmp = startMs; startMs = endMs; endMs = tmp;
+   }
+
+   if (isWorkweek){
+     const startDate = new Date(startMs);
+     const day = startDate.getDay();
+     if (day === 0 || day === 6){
+       const deltaDays = (day === 0) ? 1 : 2;
+       startDate.setDate(startDate.getDate() + deltaDays);
+       const endDate = new Date(endMs);
+       endDate.setDate(endDate.getDate() + deltaDays);
+       startMs = startDate.getTime();
+       endMs = endDate.getTime();
+       t.planned = ymdFromDate(startDate);
+       if (t.plannedEnd){
+         t.plannedEnd = ymdFromDate(endDate);
+       } else {
+         const durationDays = Math.round((endMs - startMs) / 86400000);
+         t.plannedEnd = durationDays > 0 ? ymdFromDate(endDate) : "";
+       }
+       t.updated = Date.now();
+     }
+   }
+
+   if (endMs >= newStartMs) continue;
+
+   const durationDays = Math.round((endMs - startMs) / 86400000);
+   const newStart = new Date(newWeekStart);
+   const newEnd = new Date(newWeekStart);
+   newEnd.setDate(newEnd.getDate() + durationDays);
+
+   t.planned = ymdFromDate(newStart);
+   if (t.plannedEnd){
+     t.plannedEnd = ymdFromDate(newEnd);
+   } else {
+     t.plannedEnd = durationDays > 0 ? ymdFromDate(newEnd) : "";
+   }
+   t.updated = Date.now();
+ }
+}
 
 /** --- Navigation --- **/
 function setActiveTab(id){
@@ -1195,6 +1276,9 @@ function renderTasks(){
    }
    return true;
  });
+ const openList = list.filter(t => t.status !== "Done");
+ const doneList = list.filter(t => t.status === "Done");
+ list = openList.concat(doneList);
 
  if (list.length === 0){
    const empty = document.createElement("div");
@@ -1354,15 +1438,21 @@ function renderWeek(){
  const w = weekDate();
  weekTitle.textContent = "Week vanaf " + w.toLocaleDateString();
  weekGrid.innerHTML = "";
+ const isWorkweek = (state.settings && state.settings.weekMode === "workweek");
+ weekGrid.classList.toggle("workweek", isWorkweek);
+ const daysToShow = isWorkweek ? 5 : 7;
 
- for (let i=0; i<7; i++){
+ for (let i=0; i<daysToShow; i++){
    const d = new Date(w);
    d.setDate(d.getDate() + i);
    const dIso = ymdFromDate(d);
 
-   const dayTasks = state.tasks
+   const dayTasksSorted = state.tasks
      .filter(t => taskSpansDate(t, dIso) && t.status !== "Archived")
      .sort((a,b) => ((b.created||0)-(a.created||0)));
+   const openTasks = dayTasksSorted.filter(t => t.status !== "Done");
+   const doneTasks = dayTasksSorted.filter(t => t.status === "Done");
+   const dayTasks = openTasks.concat(doneTasks);
 
    const dayDiv = document.createElement("div");
    dayDiv.className = "week-day";
@@ -1543,6 +1633,7 @@ function renderSettings(){
  emailTo.value = state.settings.emailTo || "";
  notifyHour.value = state.settings.notifyHour ?? 12;
  notifyMinute.value = state.settings.notifyMinute ?? 0;
+ weekMode.value = state.settings.weekMode || "full";
 
  renderCreate();
  rerenderVisible();
@@ -1623,6 +1714,7 @@ function saveSettings(){
  state.settings.emailTo = (emailTo.value || "").trim();
  state.settings.notifyHour = clampInt(notifyHour.value, 12);
  state.settings.notifyMinute = clampInt(notifyMinute.value, 0);
+ state.settings.weekMode = (weekMode.value === "workweek") ? "workweek" : "full";
  save();
  alert("Settings opgeslagen.");
 }
@@ -1875,10 +1967,11 @@ window.__applyCloudState = function(cloudState){
  s.projects = normalizeProjects(s.projects);
  s.labels = normalizeLabels(s.labels);
 
- if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0 };
+ if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" };
  s.settings.notifyHour = clampInt(s.settings.notifyHour, 12);
  s.settings.notifyMinute = clampInt(s.settings.notifyMinute, 0);
  s.settings.emailTo = String(s.settings.emailTo ?? "");
+ s.settings.weekMode = (s.settings.weekMode === "workweek") ? "workweek" : "full";
 
  s.tasks = s.tasks.map(migrateTask);
 
