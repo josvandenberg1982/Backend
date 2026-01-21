@@ -2265,11 +2265,11 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.text(`Gantt - ${projectName}${titleSuffix}`, margin, 55);
 
    doc.setFont("helvetica","normal");
-   doc.setFontSize(9);
+   doc.setFontSize(8);
    doc.text(
      `Periode: ${winStart.toLocaleDateString("nl-NL")} → ${new Date(winEnd.getTime()-86400000).toLocaleDateString("nl-NL")}`,
      margin,
-     75
+     68
    );
 
    const chartX = margin;
@@ -2309,7 +2309,7 @@ function drawGantt(doc, projectName, tasks, margin){
    pageIndex++;
    let frame = drawWindowFrame(winStart, winEnd, "");
 
-   let y = frame.chartY;
+   let y = frame.chartY + 12;
    const rowH = 14;
    doc.setDrawColor(230);
 
@@ -2317,7 +2317,7 @@ function drawGantt(doc, projectName, tasks, margin){
      if (y > pageH - margin - 30){
        doc.addPage();
        frame = drawWindowFrame(winStart, winEnd, " (vervolg)");
-       y = frame.chartY;
+       y = frame.chartY + 12;
      }
 
      const t = it.t;
