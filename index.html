@@ -327,9 +327,7 @@
  .group-block { margin-bottom:12px; }
  .group-head { display:flex; align-items:center; gap:8px; margin:4px 2px 8px; }
  .group-body { display:flex; flex-direction:column; gap:12px; }
-.group-done { opacity: 1; }
-.group-done .group-body { opacity: 0.7; }
-.group-done .week-group-body { opacity: 0.7; }
+.group-done { opacity: 0.75; }
 
  .week-group { margin-top:10px; }
  .week-group:first-child { margin-top:0; }
@@ -1549,7 +1547,7 @@ function createTaskCard(t){
                       ${it.done ? "checked" : ""}
                       onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
                <span class="txt ${it.done ? "done" : ""}"
-                     onclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
+                     ondblclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
                <button class="btn btn-small" type="button" aria-label="Omhoog"
                        onclick="moveChecklistItem('${t.id}','${it.id}', -1)">↑</button>
                <button class="btn btn-small" type="button" aria-label="Omlaag"
@@ -1650,7 +1648,7 @@ function createWeekTaskCard(t){
                          onclick="event.stopPropagation()"
                          onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
                   <span class="txt ${it.done ? "done" : ""}"
-                        onclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
+                        ondblclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
                 </li>
               `).join("")}
             </ul>
@@ -1678,7 +1676,7 @@ function createWeekTaskCard(t){
                       ${it.done ? "checked" : ""}
                       onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
                <span class="txt ${it.done ? "done" : ""}"
-                     onclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
+                     ondblclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
              </li>
            `).join("")}
          </ul>
