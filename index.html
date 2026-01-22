@@ -188,7 +188,7 @@
  nav .btn-primary { min-height: 48px; }
 
  .unplanned { border-left: 4px solid #c90; }
- .done-row { opacity:.15; }
+.done-row { opacity:.45; }
  .danger { color:var(--danger); border-color: rgba(176,0,32,.35); }
  .warn { color:var(--warn); border-color: rgba(179,107,0,.35); }
  .ok { color:var(--ok); border-color: rgba(11,122,59,.35); }
@@ -327,7 +327,9 @@
  .group-block { margin-bottom:12px; }
  .group-head { display:flex; align-items:center; gap:8px; margin:4px 2px 8px; }
  .group-body { display:flex; flex-direction:column; gap:12px; }
- .group-done { opacity: 0.7; }
+.group-done { opacity: 1; }
+.group-done .group-body { opacity: 0.7; }
+.group-done .week-group-body { opacity: 0.7; }
 
  .week-group { margin-top:10px; }
  .week-group:first-child { margin-top:0; }
