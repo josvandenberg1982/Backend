@@ -324,6 +324,16 @@
  .pri-Low{ border-left: 4px solid rgba(11,122,59,.45); }
 
  .task-list { display:flex; flex-direction:column; gap:12px; }
+ .group-block { margin-bottom:12px; }
+ .group-head { display:flex; align-items:center; gap:8px; margin:4px 2px 8px; }
+ .group-body { display:flex; flex-direction:column; gap:12px; }
+ .group-done { opacity: 0.7; }
+
+ .week-group { margin-top:10px; }
+ .week-group:first-child { margin-top:0; }
+ .week-group-head { display:flex; align-items:center; gap:8px; margin:0 0 6px; }
+ .week-group-body { display:flex; flex-direction:column; gap:10px; }
+
  .task-card { background:#fff; border:1px solid #e7e7e7; border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); }
  .task-card-top { padding:12px; background:#fff; }
  .task-card-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
@@ -336,6 +346,25 @@
  .summary-row strong { font-size:16px; }
 
  label { display:block; margin-top:8px; font-size: 13px; color:#333; }
+
+ .pull-refresh {
+   position: fixed;
+   top: 0;
+   left: 0;
+   right: 0;
+   height: 36px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 12px;
+   color: #444;
+   background: #f7f7f7;
+   border-bottom: 1px solid #eee;
+   z-index: 20;
+   transform: translateY(-40px);
+   transition: transform 0.2s ease;
+ }
+ .pull-refresh.show { transform: translateY(0); }
 
  /* PDF knoppen in Settings */
  .btn-inline {
@@ -413,6 +442,8 @@
 </head>
 
 <body>
+
+<div id="pullRefresh" class="pull-refresh" hidden>Vernieuwen...</div>
 
 <nav>
   <button class="btn" type="button" data-tab="create" onclick="show('create')">Nieuwe taak</button>
@@ -914,6 +945,93 @@ function autoRollOverByToday(){
  if (rollOverTasks(todayStart, todayStart)) save();
 }
 
+let detailsObserver = null;
+
+function collapseAllDetails(){
+ openTaskIds.clear();
+ document.querySelectorAll("details[open]").forEach(d => { d.open = false; });
+}
+
+function observeDetails(){
+ if (!("IntersectionObserver" in window)) return;
+ if (!detailsObserver){
+   detailsObserver = new IntersectionObserver((entries) => {
+     for (const entry of entries){
+       if (entry.isIntersecting) continue;
+       const el = entry.target;
+       if (el.open){
+         el.open = false;
+         const id = el.dataset.taskid;
+         if (id) openTaskIds.delete(id);
+       }
+     }
+   });
+ }
+ detailsObserver.disconnect();
+ document.querySelectorAll("details[data-close-on-hide=\"1\"]").forEach(el => {
+   detailsObserver.observe(el);
+ });
+}
+
+function focusTodayInWeek(){
+ const today = new Date();
+ const weekStart = weekDate();
+ if (startOfWeek(today).getTime() !== weekStart.getTime()) return;
+ const id = "day_" + ymdFromDate(today);
+ const el = document.getElementById(id);
+ if (!el) return;
+ requestAnimationFrame(() => {
+   el.scrollIntoView({ block:"start", inline:"center", behavior:"smooth" });
+ });
+}
+
+function refreshData(){
+ const next = load();
+ setState(next);
+ renderCreate();
+ rerenderVisible();
+ if (!document.getElementById("settings").hidden) renderSettings();
+}
+
+function initPullToRefresh(){
+ const el = document.getElementById("pullRefresh");
+ if (!el) return;
+ const scrollEl = document.scrollingElement || document.documentElement;
+ let startY = 0;
+ let pullDist = 0;
+ let pulling = false;
+
+ window.addEventListener("touchstart", (e) => {
+   if (scrollEl.scrollTop > 0) return;
+   startY = e.touches[0].clientY;
+   pullDist = 0;
+   pulling = true;
+ }, { passive: true });
+
+ window.addEventListener("touchmove", (e) => {
+   if (!pulling) return;
+   pullDist = e.touches[0].clientY - startY;
+   if (pullDist <= 10) return;
+   el.hidden = false;
+   el.classList.add("show");
+   el.textContent = pullDist > 60 ? "Loslaten om te vernieuwen" : "Vernieuwen...";
+ }, { passive: true });
+
+ window.addEventListener("touchend", () => {
+   if (!pulling) return;
+   if (pullDist > 60){
+     el.textContent = "Vernieuwd";
+     refreshData();
+   }
+   setTimeout(() => {
+     el.classList.remove("show");
+     el.hidden = true;
+   }, 400);
+   pulling = false;
+   pullDist = 0;
+ }, { passive: true });
+}
+
 /** --- Navigation --- **/
 function setActiveTab(id){
  document.querySelectorAll("nav button[data-tab]").forEach(btn => {
@@ -924,6 +1042,7 @@ function setActiveTab(id){
 }
 
 function show(id){
+ collapseAllDetails();
  document.querySelectorAll("section").forEach(s=>s.hidden=true);
  const el = document.getElementById(id);
  if (el) el.hidden=false;
@@ -1197,6 +1316,74 @@ function deleteChecklistItem(taskId, itemId){
  save();
  rerenderVisible();
 }
+function updateChecklistText(taskId, itemId, nextText){
+ const t = state.tasks.find(x=>x.id===taskId);
+ if (!t) return;
+ const it = t.checklist.find(i=>i.id===itemId);
+ if (!it) return;
+ it.text = String(nextText || "").trim();
+ t.updated = Date.now();
+ save();
+ rerenderVisible();
+}
+function moveChecklistItem(taskId, itemId, dir){
+ const t = state.tasks.find(x=>x.id===taskId);
+ if (!t) return;
+ const idx = t.checklist.findIndex(i=>i.id===itemId);
+ if (idx < 0) return;
+ const next = idx + dir;
+ if (next < 0 || next >= t.checklist.length) return;
+ const [it] = t.checklist.splice(idx, 1);
+ t.checklist.splice(next, 0, it);
+ t.updated = Date.now();
+ save();
+ rerenderVisible();
+}
+function enableChecklistEdit(e, taskId, itemId, el){
+ e.stopPropagation();
+ e.preventDefault();
+
+ if (!el || el.dataset.editing === "1") return;
+ const t = state.tasks.find(x=>x.id===taskId);
+ if (!t) return;
+ const it = t.checklist.find(x=>x.id===itemId);
+ if (!it) return;
+
+ el.dataset.editing = "1";
+ el.contentEditable = "true";
+ el.focus();
+
+ const sel = window.getSelection();
+ if (sel){
+   const range = document.createRange();
+   range.selectNodeContents(el);
+   sel.removeAllRanges();
+   sel.addRange(range);
+ }
+
+ function finish(saveIt){
+   if (saveIt){
+     const next = (el.textContent || "").trim();
+     if (next) updateChecklistText(taskId, itemId, next);
+     else el.textContent = it.text;
+   } else {
+     el.textContent = it.text;
+   }
+   el.contentEditable = "false";
+   delete el.dataset.editing;
+ }
+
+ el.onkeydown = (ev) => {
+   if (ev.key === "Enter"){
+     ev.preventDefault();
+     finish(true);
+   } else if (ev.key === "Escape"){
+     ev.preventDefault();
+     finish(false);
+   }
+ };
+ el.onblur = () => finish(true);
+}
 function checklistProgress(t){
  const total = (t.checklist || []).length;
  const done = (t.checklist || []).filter(i=>i.done).length;
@@ -1282,6 +1469,243 @@ function enableTitleEdit(e, id, el){
  el.onblur = () => finish(true);
 }
 
+function groupByProject(list){
+ const order = [];
+ const map = new Map();
+ for (const t of (list || [])){
+   const key = t.project || "Algemeen";
+   if (!map.has(key)){
+     map.set(key, []);
+     order.push(key);
+   }
+   map.get(key).push(t);
+ }
+ return order.map(project => ({ project, tasks: map.get(project) }));
+}
+
+function createTaskCard(t){
+ const prog = checklistProgress(t);
+ const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
+ const labels = splitTags(t.tags);
+ const projectColor = getProjectColor(t.project);
+
+ const card = document.createElement("div");
+ card.className = "task-card";
+ if (!t.planned) card.classList.add("unplanned");
+ if (t.status === "Done") card.classList.add("done-row");
+ card.classList.add(`pri-${t.priority || "Medium"}`);
+
+ card.innerHTML = `
+   <div class="task-card-top">
+     <details data-close-on-hide="1" data-taskid="${escapeAttr(t.id)}" ${openTaskIds.has(t.id) ? "open" : ""} ontoggle="toggleTaskOpen('${t.id}', this.open)">
+       <summary>
+         <div class="summary-row">
+           <div style="flex:1; min-width:0;">
+             <strong style="word-break:break-word;">
+               <span class="task-title"
+                     ondblclick="enableTitleEdit(event,'${t.id}', this)"
+                     onclick="event.stopPropagation()">${escapeHtml(t.title)}</span>
+             </strong>
+             <div class="task-card-meta">
+               ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ""}
+               <span class="pill">${escapeHtml(t.priority)}</span>
+               <span class="pill">${escapeHtml(t.status)}</span>
+               <span class="pill">CL ${progText}</span>
+               ${t.planned ? `<span class="pill">Gepland ${escapeHtml(t.planned)}</span>` : `<span class="pill">Niet ingepland</span>`}
+               ${t.plannedEnd && t.plannedEnd !== t.planned ? `<span class="pill">Tot ${escapeHtml(t.plannedEnd)}</span>` : ``}
+               ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
+               ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
+             </div>
+           </div>
+           <div class="small muted" style="white-space:nowrap;">Bewerk ▾</div>
+         </div>
+       </summary>
+
+       ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
+
+       <div class="task-card-actions">
+         <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
+         <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
+         <button class="btn" type="button" onclick="deleteTask('${t.id}')">Verwijder</button>
+       </div>
+
+       <div class="cl-wrap" style="margin-top:12px;">
+         <div class="cl-head">
+           <strong>Mini-checklist</strong>
+           <span class="small">${progText}</span>
+         </div>
+
+         <div class="mini-row" style="margin-top:8px;">
+           <input id="cl_new_${t.id}" placeholder="Checklist item toevoegen">
+           <button class="btn btn-small" type="button" onclick="addChecklistItem('${t.id}')">+</button>
+         </div>
+
+         <ul class="cl-list">
+           ${(t.checklist||[]).map(it => `
+             <li class="cl-item">
+               <input type="checkbox"
+                      ${it.done ? "checked" : ""}
+                      onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
+               <span class="txt ${it.done ? "done" : ""}"
+                     onclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
+               <button class="btn btn-small" type="button" aria-label="Omhoog"
+                       onclick="moveChecklistItem('${t.id}','${it.id}', -1)">↑</button>
+               <button class="btn btn-small" type="button" aria-label="Omlaag"
+                       onclick="moveChecklistItem('${t.id}','${it.id}', 1)">↓</button>
+               <button class="btn btn-small" type="button" onclick="deleteChecklistItem('${t.id}','${it.id}')">x</button>
+             </li>
+           `).join("")}
+         </ul>
+         ${(t.checklist||[]).length === 0 ? `<div class="small muted">Nog geen checklist items.</div>` : ``}
+       </div>
+
+       <div class="task-card-edit">
+         <div class="small muted">Aangemaakt: ${new Date(t.created).toLocaleString()} · Laatst gewijzigd: ${new Date(t.updated||t.created).toLocaleString()}</div>
+
+         <label>Project</label>
+         <select onchange="updateTaskField('${t.id}','project',this.value)">
+           ${getProjectNames().map(p => `<option ${p===t.project?'selected':''}>${escapeHtml(p)}</option>`).join("")}
+         </select>
+
+         <label>Prioriteit</label>
+         <select onchange="updateTaskField('${t.id}','priority',this.value)">
+           ${opt("High", t.priority)}${opt("Medium", t.priority)}${opt("Low", t.priority)}
+         </select>
+
+         <label>Status</label>
+         <select onchange="updateTaskField('${t.id}','status',this.value)">
+           ${opt("Todo", t.status)}${opt("Planned", t.status)}${opt("Done", t.status)}${opt("Archived", t.status)}
+         </select>
+
+         <label>Schatting (uren)</label>
+         <input type="number" min="0" step="0.5"
+                value="${escapeAttr(String(t.estimateHours ?? 0))}"
+                onchange="updateTaskField('${t.id}','estimateHours', this.value==='' ? '' : Number(this.value))">
+
+         <label>Datum inplannen</label>
+         <input type="date"
+                value="${escapeAttr(t.planned||"")}"
+                data-taskid="${t.id}"
+                onfocus="rememberDate(this)"
+                onblur="commitDate(this)">
+
+         <label>Einddatum planning</label>
+         <input type="date"
+                value="${escapeAttr(t.plannedEnd||"")}"
+                onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
+
+         <div class="row" style="margin-top:6px;">
+           <button class="btn" type="button" onclick="planToday('${t.id}')">Plan vandaag</button>
+           <button class="btn" type="button" onclick="clearPlan('${t.id}')">Planning wissen</button>
+         </div>
+
+         <label>Deadline</label>
+         <input type="date"
+                value="${escapeAttr(t.deadline||"")}"
+                onchange="updateTaskField('${t.id}','deadline', this.value)">
+
+         <label>Labels (komma-gescheiden)</label>
+         <input value="${escapeAttr(t.tags||"")}"
+                onchange="updateTaskField('${t.id}','tags', this.value)">
+
+         <label>Opmerkingen</label>
+         <textarea rows="3"
+                   onchange="updateTaskField('${t.id}','notes', this.value)">${escapeHtml(t.notes||"")}</textarea>
+       </div>
+
+     </details>
+   </div>
+ `;
+
+ return card;
+}
+
+function createWeekTaskCard(t){
+ const projectColor = getProjectColor(t.project);
+ const labels = splitTags(t.tags);
+
+ const card = document.createElement("div");
+ card.className = `week-task pri-${t.priority || "Medium"}`;
+ if (t.status === "Done") card.classList.add("done-row");
+
+ card.innerHTML = `
+   <details data-close-on-hide="1">
+     <summary>
+       <div class="week-summary-row">
+         <div style="flex:1; min-width:0;">
+           <div class="week-task-title">${escapeHtml(t.title)}</div>
+
+          <div class="week-task-meta">
+            ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
+            ${t.notes ? `<span class="pill">Opmerking</span>` : ``}
+          </div>
+          ${(t.checklist||[]).length ? `
+            <ul class="week-cl-summary">
+              ${(t.checklist||[]).map(it => `
+                <li class="${it.done ? "done" : ""}">
+                  <input type="checkbox"
+                         ${it.done ? "checked" : ""}
+                         onclick="event.stopPropagation()"
+                         onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
+                  <span class="txt ${it.done ? "done" : ""}"
+                        onclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
+                </li>
+              `).join("")}
+            </ul>
+          ` : ``}
+        </div>
+        <div class="small muted" style="white-space:nowrap;">▾</div>
+      </div>
+    </summary>
+
+    <div class="week-task-meta" style="margin-top:8px;">
+      <span class="pill">${escapeHtml(t.priority)}</span>
+      <span class="pill">${escapeHtml(t.status)}</span>
+      ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
+      ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
+    </div>
+
+    ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
+
+     ${(t.checklist||[]).length === 0 ? `` : `
+       <div class="week-cl">
+         <ul>
+           ${(t.checklist||[]).map(it => `
+             <li>
+               <input type="checkbox"
+                      ${it.done ? "checked" : ""}
+                      onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
+               <span class="txt ${it.done ? "done" : ""}"
+                     onclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
+             </li>
+           `).join("")}
+         </ul>
+       </div>
+     `}
+
+     <label class="small" style="margin-top:8px;">Datum inplannen</label>
+     <input type="date"
+            value="${escapeAttr(t.planned||"")}"
+            data-taskid="${t.id}"
+            onfocus="rememberDate(this)"
+            onblur="commitDate(this)">
+
+     <label class="small">Einddatum planning</label>
+     <input type="date"
+            value="${escapeAttr(t.plannedEnd||"")}"
+            onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
+
+     <div class="week-actions">
+       <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
+       <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
+       <button class="btn" type="button" onclick="clearPlan('${t.id}')">Uit dag halen</button>
+     </div>
+   </details>
+ `;
+
+ return card;
+}
+
 function renderTasks(){
  autoRollOverByToday();
  buildFilters();
@@ -1321,138 +1745,31 @@ function renderTasks(){
    return;
  }
 
- for (const t of list) {
-   const prog = checklistProgress(t);
-   const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
+ const openGroups = groupByProject(openList);
+ const doneGroups = groupByProject(doneList).map(g => ({ ...g, done: true }));
+ const allGroups = openGroups.concat(doneGroups);
 
-   const labels = splitTags(t.tags);
-   const projectColor = getProjectColor(t.project);
+ for (const group of allGroups){
+   const groupEl = document.createElement("div");
+   groupEl.className = "group-block";
+   if (group.done) groupEl.classList.add("group-done");
 
-   const card = document.createElement("div");
-   card.className = "task-card";
-   if (!t.planned) card.classList.add("unplanned");
-   if (t.status === "Done") card.classList.add("done-row");
-   card.classList.add(`pri-${t.priority || "Medium"}`);
-
-   card.innerHTML = `
-     <div class="task-card-top">
-       <details ${openTaskIds.has(t.id) ? "open" : ""} ontoggle="toggleTaskOpen('${t.id}', this.open)">
-         <summary>
-           <div class="summary-row">
-             <div style="flex:1; min-width:0;">
-               <strong style="word-break:break-word;">
-                 <span class="task-title"
-                       ondblclick="enableTitleEdit(event,'${t.id}', this)"
-                       onclick="event.stopPropagation()">${escapeHtml(t.title)}</span>
-               </strong>
-               <div class="task-card-meta">
-                 ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ""}
-                 <span class="pill">${escapeHtml(t.priority)}</span>
-                 <span class="pill">${escapeHtml(t.status)}</span>
-                 <span class="pill">CL ${progText}</span>
-                 ${t.planned ? `<span class="pill">Gepland ${escapeHtml(t.planned)}</span>` : `<span class="pill">Niet ingepland</span>`}
-                 ${t.plannedEnd && t.plannedEnd !== t.planned ? `<span class="pill">Tot ${escapeHtml(t.plannedEnd)}</span>` : ``}
-                 ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
-                 ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
-               </div>
-             </div>
-             <div class="small muted" style="white-space:nowrap;">Bewerk ▾</div>
-           </div>
-         </summary>
-
-         ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
-
-         <div class="task-card-actions">
-           <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
-           <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
-           <button class="btn" type="button" onclick="deleteTask('${t.id}')">Verwijder</button>
-         </div>
-
-         <div class="cl-wrap" style="margin-top:12px;">
-           <div class="cl-head">
-             <strong>Mini-checklist</strong>
-             <span class="small">${progText}</span>
-           </div>
-
-           <div class="mini-row" style="margin-top:8px;">
-             <input id="cl_new_${t.id}" placeholder="Checklist item toevoegen">
-             <button class="btn btn-small" type="button" onclick="addChecklistItem('${t.id}')">+</button>
-           </div>
-
-           <ul class="cl-list">
-             ${(t.checklist||[]).map(it => `
-               <li class="cl-item">
-                 <input type="checkbox"
-                        ${it.done ? "checked" : ""}
-                        onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
-                 <span class="txt ${it.done ? "done" : ""}">${escapeHtml(it.text)}</span>
-                 <button class="btn btn-small" type="button" onclick="deleteChecklistItem('${t.id}','${it.id}')">x</button>
-               </li>
-             `).join("")}
-           </ul>
-           ${(t.checklist||[]).length === 0 ? `<div class="small muted">Nog geen checklist items.</div>` : ``}
-         </div>
-
-         <div class="task-card-edit">
-           <div class="small muted">Aangemaakt: ${new Date(t.created).toLocaleString()} · Laatst gewijzigd: ${new Date(t.updated||t.created).toLocaleString()}</div>
-
-           <label>Project</label>
-           <select onchange="updateTaskField('${t.id}','project',this.value)">
-             ${getProjectNames().map(p => `<option ${p===t.project?'selected':''}>${escapeHtml(p)}</option>`).join("")}
-           </select>
-
-           <label>Prioriteit</label>
-           <select onchange="updateTaskField('${t.id}','priority',this.value)">
-             ${opt("High", t.priority)}${opt("Medium", t.priority)}${opt("Low", t.priority)}
-           </select>
-
-           <label>Status</label>
-           <select onchange="updateTaskField('${t.id}','status',this.value)">
-             ${opt("Todo", t.status)}${opt("Planned", t.status)}${opt("Done", t.status)}${opt("Archived", t.status)}
-           </select>
-
-           <label>Schatting (uren)</label>
-           <input type="number" min="0" step="0.5"
-                  value="${escapeAttr(String(t.estimateHours ?? 0))}"
-                  onchange="updateTaskField('${t.id}','estimateHours', this.value==='' ? '' : Number(this.value))">
-
-           <label>Datum inplannen</label>
-           <input type="date"
-                  value="${escapeAttr(t.planned||"")}"
-                  data-taskid="${t.id}"
-                  onfocus="rememberDate(this)"
-                  onblur="commitDate(this)">
-
-           <label>Einddatum planning</label>
-           <input type="date"
-                  value="${escapeAttr(t.plannedEnd||"")}"
-                  onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
-
-           <div class="row" style="margin-top:6px;">
-             <button class="btn" type="button" onclick="planToday('${t.id}')">Plan vandaag</button>
-             <button class="btn" type="button" onclick="clearPlan('${t.id}')">Planning wissen</button>
-           </div>
-
-           <label>Deadline</label>
-           <input type="date"
-                  value="${escapeAttr(t.deadline||"")}"
-                  onchange="updateTaskField('${t.id}','deadline', this.value)">
-
-           <label>Labels (komma-gescheiden)</label>
-           <input value="${escapeAttr(t.tags||"")}"
-                  onchange="updateTaskField('${t.id}','tags', this.value)">
-
-           <label>Opmerkingen</label>
-           <textarea rows="3"
-                     onchange="updateTaskField('${t.id}','notes', this.value)">${escapeHtml(t.notes||"")}</textarea>
-         </div>
-
-       </details>
+   const projectColor = getProjectColor(group.project);
+   groupEl.innerHTML = `
+     <div class="group-head">
+       <span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(group.project)}</span>
+       ${group.done ? `<span class="badge">Done</span>` : ``}
      </div>
    `;
 
-   listEl.appendChild(card);
+   const body = document.createElement("div");
+   body.className = "group-body";
+   for (const t of group.tasks) body.appendChild(createTaskCard(t));
+   groupEl.appendChild(body);
+   listEl.appendChild(groupEl);
  }
+
+ observeDetails();
 }
 
 /** --- Week view --- **/
@@ -1514,94 +1831,33 @@ function renderWeek(){
      body.appendChild(empty);
      continue;
    }
+   const openGroups = groupByProject(openTasks);
+   const doneGroups = groupByProject(doneTasks).map(g => ({ ...g, done: true }));
+   const dayGroups = openGroups.concat(doneGroups);
 
-   for (const t of dayTasks) {
-     const prog = checklistProgress(t);
-     const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
+   for (const group of dayGroups){
+     const groupEl = document.createElement("div");
+     groupEl.className = "week-group";
+     if (group.done) groupEl.classList.add("group-done");
 
-     const projectColor = getProjectColor(t.project);
-     const labels = splitTags(t.tags);
-
-     const card = document.createElement("div");
-     card.className = `week-task pri-${t.priority || "Medium"}`;
-     if (t.status === "Done") card.classList.add("done-row");
-
-     card.innerHTML = `
-       <details>
-         <summary>
-           <div class="week-summary-row">
-             <div style="flex:1; min-width:0;">
-               <div class="week-task-title">${escapeHtml(t.title)}</div>
-
-              <div class="week-task-meta">
-                ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
-                ${t.notes ? `<span class="pill">Opmerking</span>` : ``}
-              </div>
-              ${(t.checklist||[]).length ? `
-                <ul class="week-cl-summary">
-                  ${(t.checklist||[]).map(it => `
-                    <li class="${it.done ? "done" : ""}">
-                      <input type="checkbox"
-                             ${it.done ? "checked" : ""}
-                             onclick="event.stopPropagation()"
-                             onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
-                      ${escapeHtml(it.text)}
-                    </li>
-                  `).join("")}
-                </ul>
-              ` : ``}
-            </div>
-            <div class="small muted" style="white-space:nowrap;">▾</div>
-          </div>
-        </summary>
-
-        <div class="week-task-meta" style="margin-top:8px;">
-          <span class="pill">${escapeHtml(t.priority)}</span>
-          <span class="pill">${escapeHtml(t.status)}</span>
-          ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
-          ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
-        </div>
-
-        ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
-
-         ${(t.checklist||[]).length === 0 ? `` : `
-           <div class="week-cl">
-             <ul>
-               ${(t.checklist||[]).map(it => `
-                 <li>
-                   <input type="checkbox"
-                          ${it.done ? "checked" : ""}
-                          onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
-                   <span class="txt ${it.done ? "done" : ""}">${escapeHtml(it.text)}</span>
-                 </li>
-               `).join("")}
-             </ul>
-           </div>
-         `}
-
-         <label class="small" style="margin-top:8px;">Datum inplannen</label>
-         <input type="date"
-                value="${escapeAttr(t.planned||"")}"
-                data-taskid="${t.id}"
-                onfocus="rememberDate(this)"
-                onblur="commitDate(this)">
-
-         <label class="small">Einddatum planning</label>
-         <input type="date"
-                value="${escapeAttr(t.plannedEnd||"")}"
-                onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
-
-         <div class="week-actions">
-           <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
-           <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
-           <button class="btn" type="button" onclick="clearPlan('${t.id}')">Uit dag halen</button>
-         </div>
-       </details>
+     const projectColor = getProjectColor(group.project);
+     groupEl.innerHTML = `
+       <div class="week-group-head">
+         <span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(group.project)}</span>
+         ${group.done ? `<span class="badge">Done</span>` : ``}
+       </div>
      `;
 
-     body.appendChild(card);
+     const groupBody = document.createElement("div");
+     groupBody.className = "week-group-body";
+     for (const t of group.tasks) groupBody.appendChild(createWeekTaskCard(t));
+     groupEl.appendChild(groupBody);
+     body.appendChild(groupEl);
    }
  }
+
+ observeDetails();
+ focusTodayInWeek();
 }
 
 /** --- Settings: projects + labels --- **/
@@ -2033,6 +2289,8 @@ window.__applyCloudState = function(cloudState){
  renderCreate();
  rerenderVisible();
 };
+
+initPullToRefresh();
 
 /** --------------------------
 *  PDF export per project
