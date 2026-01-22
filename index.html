@@ -232,6 +232,10 @@
    border-radius: var(--radius);
    overflow:hidden;
  }
+ .week-day.today{
+   border-color:#cfd8ff;
+   box-shadow: 0 0 0 2px rgba(37,99,235,.08);
+ }
  .week-day-head{
    padding:10px 12px;
    background:#fff;
@@ -243,6 +247,18 @@
  }
  .week-day-head .week-day-name{ font-size:var(--week-title-size); font-weight:700; }
  .week-day-head .week-day-date{ font-size:12px; color:var(--muted); }
+ .week-today-badge{
+   display:inline-flex;
+   align-items:center;
+   padding:2px 8px;
+   border-radius:999px;
+   font-size:11px;
+   font-weight:700;
+   color:#0f172a;
+   background:rgba(37,99,235,.12);
+   border:1px solid rgba(37,99,235,.22);
+   margin-left:6px;
+ }
  .week-day-body{ padding:10px 10px 12px 10px; }
  .week-empty{
    padding:10px;
@@ -293,7 +309,7 @@
  .week-cl li {
    display:flex;
    gap:8px;
-   align-items:flex-start;
+   align-items:fålex-start;
    padding: 4px 0;
    font-size: 12px;
    color:#444;
@@ -1051,7 +1067,7 @@ function show(id){
  setActiveTab(id);
 
  if (id === "tasks") renderTasks();
- if (id === "week") renderWeek();
+ if (id === "week") { setWeek(new Date()); renderWeek(); }
  if (id === "settings") renderSettings();
  if (id === "create") renderCreate();
 }
@@ -1339,6 +1355,10 @@ function moveChecklistItem(taskId, itemId, dir){
  save();
  rerenderVisible();
 }
+function checklistForRender(t){
+ const list = Array.isArray(t?.checklist) ? t.checklist.slice() : [];
+ return list.sort((a,b) => Number(!!a.done) - Number(!!b.done));
+}
 function enableChecklistEdit(e, taskId, itemId, el){
  e.stopPropagation();
  e.preventDefault();
@@ -1488,6 +1508,7 @@ function createTaskCard(t){
  const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
  const labels = splitTags(t.tags);
  const projectColor = getProjectColor(t.project);
+ const checklistItems = checklistForRender(t);
 
  const card = document.createElement("div");
  card.className = "task-card";
@@ -1541,7 +1562,7 @@ function createTaskCard(t){
          </div>
 
          <ul class="cl-list">
-           ${(t.checklist||[]).map(it => `
+           ${checklistItems.map(it => `
              <li class="cl-item">
                <input type="checkbox"
                       ${it.done ? "checked" : ""}
@@ -1556,7 +1577,7 @@ function createTaskCard(t){
              </li>
            `).join("")}
          </ul>
-         ${(t.checklist||[]).length === 0 ? `<div class="small muted">Nog geen checklist items.</div>` : ``}
+         ${checklistItems.length === 0 ? `<div class="small muted">Nog geen checklist items.</div>` : ``}
        </div>
 
        <div class="task-card-edit">
@@ -1623,6 +1644,7 @@ function createTaskCard(t){
 function createWeekTaskCard(t){
  const projectColor = getProjectColor(t.project);
  const labels = splitTags(t.tags);
+ const checklistItems = checklistForRender(t);
 
  const card = document.createElement("div");
  card.className = `week-task pri-${t.priority || "Medium"}`;
@@ -1639,9 +1661,9 @@ function createWeekTaskCard(t){
             ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
             ${t.notes ? `<span class="pill">Opmerking</span>` : ``}
           </div>
-          ${(t.checklist||[]).length ? `
+          ${checklistItems.length ? `
             <ul class="week-cl-summary">
-              ${(t.checklist||[]).map(it => `
+              ${checklistItems.map(it => `
                 <li class="${it.done ? "done" : ""}">
                   <input type="checkbox"
                          ${it.done ? "checked" : ""}
@@ -1667,10 +1689,10 @@ function createWeekTaskCard(t){
 
     ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
 
-     ${(t.checklist||[]).length === 0 ? `` : `
+     ${checklistItems.length === 0 ? `` : `
        <div class="week-cl">
          <ul>
-           ${(t.checklist||[]).map(it => `
+           ${checklistItems.map(it => `
              <li>
                <input type="checkbox"
                       ${it.done ? "checked" : ""}
@@ -1792,11 +1814,13 @@ function renderWeek(){
  const isWorkweek = (state.settings && state.settings.weekMode === "workweek");
  weekGrid.classList.toggle("workweek", isWorkweek);
  const daysToShow = isWorkweek ? 5 : 7;
+ const todayIso = ymdFromDate(new Date());
 
  for (let i=0; i<daysToShow; i++){
    const d = new Date(w);
    d.setDate(d.getDate() + i);
    const dIso = ymdFromDate(d);
+   const isToday = dIso === todayIso;
 
    const dayTasksSorted = state.tasks
      .filter(t => taskSpansDate(t, dIso) && t.status !== "Archived")
@@ -1806,12 +1830,12 @@ function renderWeek(){
    const dayTasks = openTasks.concat(doneTasks);
 
    const dayDiv = document.createElement("div");
-   dayDiv.className = "week-day";
+   dayDiv.className = `week-day${isToday ? " today" : ""}`;
 
    dayDiv.innerHTML = `
      <div class="week-day-head">
        <div>
-         <div class="week-day-name">${d.toLocaleDateString(undefined, { weekday: 'long' })}</div>
+         <div class="week-day-name">${d.toLocaleDateString(undefined, { weekday: 'long' })}${isToday ? `<span class="week-today-badge">Vandaag</span>` : ``}</div>
          <div class="week-day-date">${escapeHtml(dIso)}</div>
        </div>
        <div class="small">${dayTasks.length} taak/taken</div>
