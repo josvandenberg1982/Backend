@@ -2793,12 +2793,12 @@ function drawGantt(doc, projectName, tasks, margin){
    const chartTop = chartY - 12;
    const chartH = pageH - margin - chartTop;
 
-   doc.setFillColor(245,245,247);
+   doc.setFillColor(255,255,255);
    doc.rect(chartX, chartTop, labelW, chartH, "F");
    doc.setFillColor(251,251,251);
    doc.rect(barX, chartTop, barW, chartH, "F");
 
-   doc.setDrawColor(235);
+   doc.setDrawColor(210);
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
@@ -2859,7 +2859,7 @@ function drawGantt(doc, projectName, tasks, margin){
      doc.setFont("helvetica","normal");
      doc.setFontSize(8);
      const label = (t.title || "").slice(0, 65);
-     doc.text(label, frame.chartX + 4, y);
+     doc.text(label, frame.chartX + 10, y);
 
      const sx = frame.barX + (sDay/windowDays)*frame.barW;
      const ex = frame.barX + (eDay/windowDays)*frame.barW;
