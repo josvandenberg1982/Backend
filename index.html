@@ -38,19 +38,21 @@
    -webkit-text-size-adjust: 100%;
  }
 
- nav {
-   display:none;
-   gap:10px;
-   padding:10px 12px;
-   border-bottom:1px solid var(--border);
-   position: sticky;
-   top:0;
-   background:var(--bg);
-   z-index: 10;
-   min-height: var(--nav-h);
-   align-items:center;
-   justify-content:space-between;
- }
+nav {
+  display:none;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  position: sticky;
+  top:0;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 10;
+  min-height: var(--nav-h);
+  align-items:center;
+  justify-content:space-between;
+}
 
  section { padding:12px; max-width:1100px; margin:0 auto; }
 
@@ -231,6 +233,7 @@
    background:var(--soft2);
    border-radius: var(--radius);
    overflow:hidden;
+   scroll-margin-top: calc(var(--nav-h) + 12px);
  }
  .week-day.today{
    border-color:#cfd8ff;
@@ -309,7 +312,7 @@
  .week-cl li {
    display:flex;
    gap:8px;
-   align-items:fålex-start;
+   align-items:flex-start;
    padding: 4px 0;
    font-size: 12px;
    color:#444;
@@ -993,11 +996,14 @@ function focusTodayInWeek(){
  const today = new Date();
  const weekStart = weekDate();
  if (startOfWeek(today).getTime() !== weekStart.getTime()) return;
- const id = "day_" + ymdFromDate(today);
+ const id = "daywrap_" + ymdFromDate(today);
  const el = document.getElementById(id);
  if (!el) return;
  requestAnimationFrame(() => {
-   el.scrollIntoView({ block:"start", inline:"center", behavior:"smooth" });
+  el.scrollIntoView({ block:"start", inline:"center", behavior:"smooth" });
+  const nav = document.querySelector("nav");
+  const navH = nav ? nav.offsetHeight : 0;
+  if (navH) window.scrollBy({ top: -navH - 12, left: 0, behavior: "smooth" });
  });
 }
 
@@ -1159,10 +1165,12 @@ function sortTasks(list){
 function updateTaskField(id, field, value){
  const t = state.tasks.find(x=>x.id===id);
  if (!t) return;
+ const prevPlanned = t.planned;
  t[field] = value;
  t.updated = Date.now();
 
  if (field === "planned"){
+   setPlannedDate(t, t.planned, prevPlanned);
    if (t.planned && t.status === "Todo") t.status = "Planned";
    if (!t.planned && t.status === "Planned") t.status = "Todo";
    bumpWeekendPlanned(t);
@@ -1211,6 +1219,25 @@ function bumpWeekendPlanned(t){
  return true;
 }
 
+function shiftPlannedEnd(t, prevPlanned, nextPlanned){
+ const prev = dateFromYMD(prevPlanned);
+ const next = dateFromYMD(nextPlanned);
+ const end = dateFromYMD(t && t.plannedEnd);
+ if (!prev || !next || !end) return;
+ const deltaDays = Math.round((next - prev) / 86400000);
+ if (!deltaDays) return;
+ const newEnd = new Date(end);
+ newEnd.setDate(newEnd.getDate() + deltaDays);
+ t.plannedEnd = ymdFromDate(newEnd);
+}
+function setPlannedDate(t, nextPlanned, prevPlanned){
+ if (!t) return;
+ const prev = (prevPlanned !== undefined) ? prevPlanned : t.planned;
+ if (prev === nextPlanned) return;
+ t.planned = nextPlanned;
+ t.plannedEnd = "";
+}
+
 function taskSpansDate(t, ymd){
  const d = dateFromYMD(ymd);
  if (!d) return false;
@@ -1230,20 +1257,21 @@ function taskSpansDate(t, ymd){
 function rememberDate(el){ el.dataset.prev = el.value || ""; }
 function commitDate(el){
  const id = el.dataset.taskid;
- const prev = el.dataset.prev || "";
  const next = el.value || "";
- if (prev === next) return;
 
  const t = state.tasks.find(x => x.id === id);
  if (!t) return;
 
- t.planned = next;
+ if (t.planned === next) return;
+ setPlannedDate(t, next);
 
  if (next) {
    if (t.status === "Todo") t.status = "Planned";
  } else {
    if (t.status === "Planned") t.status = "Todo";
  }
+
+ bumpWeekendPlanned(t);
 
  t.updated = Date.now();
  save();
@@ -1253,7 +1281,7 @@ function commitDate(el){
 function planToday(id){
  const t = state.tasks.find(x=>x.id===id);
  if (!t) return;
- t.planned = ymdFromDate(new Date());
+ setPlannedDate(t, ymdFromDate(new Date()));
  if (t.status === "Todo") t.status = "Planned";
  t.updated = Date.now();
  save();
@@ -1262,7 +1290,7 @@ function planToday(id){
 function clearPlan(id){
  const t = state.tasks.find(x=>x.id===id);
  if (!t) return;
- t.planned = "";
+ setPlannedDate(t, "");
  if (t.status === "Planned") t.status = "Todo";
  t.updated = Date.now();
  save();
@@ -1829,8 +1857,9 @@ function renderWeek(){
    const doneTasks = dayTasksSorted.filter(t => t.status === "Done");
    const dayTasks = openTasks.concat(doneTasks);
 
-   const dayDiv = document.createElement("div");
-   dayDiv.className = `week-day${isToday ? " today" : ""}`;
+  const dayDiv = document.createElement("div");
+  dayDiv.className = `week-day${isToday ? " today" : ""}`;
+  dayDiv.id = `daywrap_${dIso}`;
 
    dayDiv.innerHTML = `
      <div class="week-day-head">
