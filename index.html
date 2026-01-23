@@ -2546,7 +2546,8 @@ function generateTotalPDF(opts){
    doc.setFont("helvetica","normal");
    doc.setFontSize(9);
    for (const t of withNotes){
-     const block = `${t.title}: ${String(t.notes).trim()}`;
+     const prefix = t.project ? `${t.project} - ${t.title}` : t.title;
+     const block = `${prefix}: ${String(t.notes).trim()}`;
      const wrapped = doc.splitTextToSize(block, pageW - margin*2);
      if (afterTableY + wrapped.length*11 > pageH - margin){
        doc.addPage();
@@ -2686,7 +2687,8 @@ function generateProjectPDF(projectName, opts){
    doc.setFont("helvetica","normal");
    doc.setFontSize(9);
    for (const t of withNotes){
-     const block = `${t.title}: ${String(t.notes).trim()}`;
+     const prefix = t.project ? `${t.project} - ${t.title}` : t.title;
+     const block = `${prefix}: ${String(t.notes).trim()}`;
      const wrapped = doc.splitTextToSize(block, pageW - margin*2);
      if (afterTableY + wrapped.length*11 > pageH - margin){
        doc.addPage();
