@@ -2769,7 +2769,7 @@ function drawGantt(doc, projectName, tasks, margin){
  const windowDays = 21;
  let pageIndex = 0;
 
- function drawWindowFrame(winStart, winEnd, titleSuffix){
+ function drawWindowFrame(winStart, winEnd, titleSuffix, chartBottomY){
    doc.setFont("helvetica","bold");
    doc.setFontSize(15);
    doc.text(`Gantt - ${projectName}${titleSuffix}`, margin, 55);
@@ -2791,7 +2791,8 @@ function drawGantt(doc, projectName, tasks, margin){
    const barX = chartX + labelW;
    const barW = chartW - labelW;
    const chartTop = chartY - 12;
-   const chartH = pageH - margin - chartTop;
+   const chartBottom = chartBottomY || (pageH - margin);
+   const chartH = Math.max(40, chartBottom - chartTop);
 
    doc.setFillColor(255,255,255);
    doc.rect(chartX, chartTop, labelW, chartH, "F");
@@ -2804,7 +2805,7 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setTextColor(110);
    for (let d=0; d<=windowDays; d++){
      const x = barX + (d/windowDays)*barW;
-     doc.line(x, chartY-10, x, pageH - margin);
+     doc.line(x, chartY-10, x, chartBottom);
      if (d < windowDays){
        const dt = new Date(winStart);
        dt.setDate(dt.getDate() + d);
@@ -2826,29 +2827,31 @@ function drawGantt(doc, projectName, tasks, margin){
    const windowItems = ganttItems.filter(it => it.r.end > winStart && it.r.start < winEnd);
    if (!windowItems.length) continue;
 
-   if (pageIndex > 0) doc.addPage();
-   pageIndex++;
-   let frame = drawWindowFrame(winStart, winEnd, "");
-
-   let y = frame.chartY + 12;
    const rowH = 14;
-   doc.setDrawColor(232);
+   const baseY = 90 + 12;
+   const rowsPerPage = Math.max(1, Math.floor(((pageH - margin - 30) - baseY) / rowH));
+   let index = 0;
+   while (index < windowItems.length){
+     if (pageIndex > 0) doc.addPage();
+     pageIndex++;
+     const rowsThisPage = Math.min(rowsPerPage, windowItems.length - index);
+     const chartBottom = baseY + rowsThisPage * rowH - 2;
+     const titleSuffix = (pageIndex > 1) ? " (vervolg)" : "";
+     const frame = drawWindowFrame(winStart, winEnd, titleSuffix, chartBottom);
 
-   let rowIndex = 0;
-   for (const it of windowItems){
-     if (y > pageH - margin - 30){
-       doc.addPage();
-       frame = drawWindowFrame(winStart, winEnd, " (vervolg)");
-       y = frame.chartY + 12;
-       rowIndex = 0;
-     }
+     let y = frame.chartY + 12;
+     doc.setDrawColor(232);
 
-     const t = it.t;
-     const r = it.r;
+     for (let i = 0; i < rowsThisPage; i++){
+       const it = windowItems[index + i];
+       const rowIndex = index + i;
 
-     if (rowIndex % 2 === 0){
-       doc.setFillColor(248,248,248);
-       doc.rect(frame.barX, y-10, frame.barW, rowH, "F");
+      const t = it.t;
+      const r = it.r;
+
+      if (rowIndex % 2 === 0){
+        doc.setFillColor(248,248,248);
+        doc.rect(frame.barX, y-10, frame.barW, rowH, "F");
      }
 
      const s = r.start < winStart ? winStart : r.start;
@@ -2887,8 +2890,9 @@ function drawGantt(doc, projectName, tasks, margin){
 
      doc.setDrawColor(232);
      doc.line(frame.chartX, y+4, frame.barX + frame.barW, y+4);
-     y += rowH;
-     rowIndex++;
+       y += rowH;
+     }
+     index += rowsThisPage;
    }
 
    doc.setFont("helvetica","normal");
