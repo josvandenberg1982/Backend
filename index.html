@@ -2846,7 +2846,7 @@ function drawGantt(doc, projectName, tasks, margin){
 
      if (rowIndex % 2 === 0){
        doc.setFillColor(248,248,248);
-       doc.rect(frame.chartX, y-10, frame.barX + frame.barW - frame.chartX, rowH, "F");
+       doc.rect(frame.barX, y-10, frame.barW, rowH, "F");
      }
 
      const s = r.start < winStart ? winStart : r.start;
@@ -2857,7 +2857,7 @@ function drawGantt(doc, projectName, tasks, margin){
      doc.setFont("helvetica","normal");
      doc.setFontSize(8);
      const label = (t.title || "").slice(0, 65);
-     doc.text(label, frame.chartX, y);
+     doc.text(label, frame.chartX + 4, y);
 
      const sx = frame.barX + (sDay/windowDays)*frame.barW;
      const ex = frame.barX + (eDay/windowDays)*frame.barW;
