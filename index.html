@@ -25,7 +25,6 @@
    --primary:#2563eb;
    --primary-hover:#1d4ed8;
    --primary-press:#1e40af;
-   --week-title-size:16px;
  }
 
  * { box-sizing:border-box; }
@@ -38,21 +37,18 @@
    -webkit-text-size-adjust: 100%;
  }
 
-nav {
-  display:none;
-  gap:10px;
-  padding:10px 12px;
-  border-bottom:1px solid var(--border);
-  position: sticky;
-  top:0;
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 10;
-  min-height: var(--nav-h);
-  align-items:center;
-  justify-content:space-between;
-}
+ nav {
+   display:none;
+   gap:10px;
+   padding:10px 12px;
+   border-bottom:1px solid var(--border);
+   position: sticky;
+   top:0;
+   background:var(--bg);
+   z-index: 10;
+   min-height: var(--nav-h);
+   align-items:center;
+ }
 
  section { padding:12px; max-width:1100px; margin:0 auto; }
 
@@ -69,14 +65,6 @@ nav {
 
  .row { display:flex; gap:10px; flex-wrap: wrap; align-items: center; }
  .row > * { flex: 1 1 180px; }
-
- .date-row > div { flex: 1 1 160px; }
-
- @media (max-width: 520px){
-   nav { gap:6px; padding:8px; flex-wrap:wrap; }
-   nav .btn { padding:8px 10px; font-size:14px; flex:1 1 calc(50% - 6px); }
-   .date-row > div { flex: 1 1 140px; }
- }
 
  hr { border:0; border-top:1px solid #eee; margin:12px 0; }
 
@@ -121,10 +109,6 @@ nav {
    margin-right:6px;
    margin-top:6px;
    line-height: 1.4;
- }
- .week-task-meta .pill {
-   font-size:11px;
-   padding:2px 8px;
  }
  .dot {
    width:10px; height:10px;
@@ -184,13 +168,11 @@ nav {
    border-radius: 14px;
    min-height: 44px;
    white-space:nowrap;
-   flex: 1 1 0;
-   text-align:center;
  }
  nav .btn-primary { min-height: 48px; }
 
  .unplanned { border-left: 4px solid #c90; }
-.done-row { opacity:.45; }
+ .done-row { opacity:.72; }
  .danger { color:var(--danger); border-color: rgba(176,0,32,.35); }
  .warn { color:var(--warn); border-color: rgba(179,107,0,.35); }
  .ok { color:var(--ok); border-color: rgba(11,122,59,.35); }
@@ -214,16 +196,9 @@ nav {
    grid-template-columns: 1fr;
    gap:12px;
  }
- .week-grid.workweek{
-   grid-template-columns: 1fr;
- }
  @media (min-width: 980px){
    .week-grid{
      grid-template-columns: repeat(7, 1fr);
-     align-items: start;
-   }
-   .week-grid.workweek{
-     grid-template-columns: repeat(5, 1fr);
      align-items: start;
    }
  }
@@ -233,11 +208,6 @@ nav {
    background:var(--soft2);
    border-radius: var(--radius);
    overflow:hidden;
-   scroll-margin-top: calc(var(--nav-h) + 12px);
- }
- .week-day.today{
-   border-color:#cfd8ff;
-   box-shadow: 0 0 0 2px rgba(37,99,235,.08);
  }
  .week-day-head{
    padding:10px 12px;
@@ -248,20 +218,7 @@ nav {
    gap:10px;
    align-items:baseline;
  }
- .week-day-head .week-day-name{ font-size:var(--week-title-size); font-weight:700; }
- .week-day-head .week-day-date{ font-size:12px; color:var(--muted); }
- .week-today-badge{
-   display:inline-flex;
-   align-items:center;
-   padding:2px 8px;
-   border-radius:999px;
-   font-size:11px;
-   font-weight:700;
-   color:#0f172a;
-   background:rgba(37,99,235,.12);
-   border:1px solid rgba(37,99,235,.22);
-   margin-left:6px;
- }
+ .week-day-head strong{ font-size:14px; }
  .week-day-body{ padding:10px 10px 12px 10px; }
  .week-empty{
    padding:10px;
@@ -280,13 +237,12 @@ nav {
  }
  .week-task:first-child{ margin-top:0; }
 
-.week-task-title {
+ .week-task-title {
    font-weight: 750;
-   font-size: var(--week-title-size);
+   font-size: 16px;
    line-height: 1.25;
-   margin: 0;
-   word-break: normal;
-   overflow-wrap: normal;
+   margin-bottom: 6px;
+   word-break: break-word;
  }
 
  .week-task-meta{
@@ -295,17 +251,6 @@ nav {
    gap:6px;
    margin-top:2px;
  }
- .week-cl-summary{
-   margin:6px 0 0 0;
-   padding-left:0;
-   list-style:none;
-   font-size:12px;
-   color:#444;
- }
- .week-cl-summary li{ margin:2px 0; display:flex; align-items:center; }
- .week-cl-summary .done{ text-decoration: line-through; color:#777; }
- .week-cl-summary input[type="checkbox"]{ width:auto; margin-right:6px; }
- details[open] .week-cl-summary{ display:none; }
 
  .week-cl { margin-top:10px; border-top:1px dashed #eee; padding-top:8px; }
  .week-cl ul { list-style:none; padding:0; margin:0; }
@@ -333,26 +278,11 @@ nav {
    margin:0;
  }
 
- .week-task details > summary { cursor:pointer; list-style:none; }
- .week-task details > summary::-webkit-details-marker { display:none; }
- .week-summary-row { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
- .week-summary-row .small { margin-top:2px; }
-
  .pri-High{ border-left: 4px solid rgba(176,0,32,.55); }
  .pri-Medium{ border-left: 4px solid rgba(179,107,0,.55); }
  .pri-Low{ border-left: 4px solid rgba(11,122,59,.45); }
 
  .task-list { display:flex; flex-direction:column; gap:12px; }
- .group-block { margin-bottom:12px; }
- .group-head { display:flex; align-items:center; gap:8px; margin:4px 2px 8px; }
- .group-body { display:flex; flex-direction:column; gap:12px; }
-.group-done { opacity: 0.75; }
-
- .week-group { margin-top:10px; }
- .week-group:first-child { margin-top:0; }
- .week-group-head { display:flex; align-items:center; gap:8px; margin:0 0 6px; }
- .week-group-body { display:flex; flex-direction:column; gap:10px; }
-
  .task-card { background:#fff; border:1px solid #e7e7e7; border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); }
  .task-card-top { padding:12px; background:#fff; }
  .task-card-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
@@ -365,25 +295,6 @@ nav {
  .summary-row strong { font-size:16px; }
 
  label { display:block; margin-top:8px; font-size: 13px; color:#333; }
-
- .pull-refresh {
-   position: fixed;
-   top: 0;
-   left: 0;
-   right: 0;
-   height: 36px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   font-size: 12px;
-   color: #444;
-   background: #f7f7f7;
-   border-bottom: 1px solid #eee;
-   z-index: 20;
-   transform: translateY(-40px);
-   transition: transform 0.2s ease;
- }
- .pull-refresh.show { transform: translateY(0); }
 
  /* PDF knoppen in Settings */
  .btn-inline {
@@ -462,8 +373,6 @@ nav {
 
 <body>
 
-<div id="pullRefresh" class="pull-refresh" hidden>Vernieuwen...</div>
-
 <nav>
   <button class="btn" type="button" data-tab="create" onclick="show('create')">Nieuwe taak</button>
   <button class="btn" type="button" data-tab="tasks" onclick="show('tasks')">Takenlijst</button>
@@ -506,7 +415,7 @@ nav {
        <label>Taakomschrijving</label>
        <input id="title" required placeholder="Bijv. offerte maken, engineering, administratie">
 
-       <div class="row date-row">
+       <div class="row">
          <div>
            <label>Project</label>
            <select id="createProject"></select>
@@ -529,10 +438,6 @@ nav {
          <div>
            <label>Datum inplannen</label>
            <input id="createPlanned" type="date">
-         </div>
-         <div>
-           <label>Einddatum planning</label>
-           <input id="createPlannedEnd" type="date">
          </div>
          <div>
            <label>Deadline</label>
@@ -613,36 +518,6 @@ nav {
 
 <section id="settings" hidden>
  <h2>Settings</h2>
-
- <div class="card">
-   <div class="card-head"><strong>Totale planning</strong></div>
-   <div class="card-pad">
-     <button class="btn-inline btn-inline-primary" type="button"
-             onclick="generateTotalPDF({ includeGantt:true })">
-       Totale planning PDF + Gantt
-     </button>
-     <button class="btn-inline" type="button"
-             onclick="generateTotalPDF({ includeGantt:false })">
-       Totale planning PDF
-     </button>
-   </div>
- </div>
-
- <div style="height:12px;"></div>
-
- <div class="card">
-   <div class="card-head"><strong>Weekweergave</strong></div>
-   <div class="card-pad">
-     <label>Toon dagen</label>
-     <select id="weekMode" onchange="setWeekMode(this.value)">
-       <option value="full">Volledige week (ma-zo)</option>
-       <option value="workweek">Werkweek (ma-vr)</option>
-     </select>
-     <div class="small muted">Werkweek verbergt zaterdag en zondag in het weekoverzicht.</div>
-   </div>
- </div>
-
- <div style="height:12px;"></div>
 
  <div class="card">
    <div class="card-head"><strong>Projecten</strong></div>
@@ -769,7 +644,6 @@ function uid(){
 /** --- State --- **/
 let state = load();
 window.state = state;
-const openTaskIds = new Set();
 
 function setState(next){
  state = next;
@@ -782,7 +656,7 @@ function defaultState(){
    week: startOfWeek(new Date()).toISOString(),
    projects: [{ name:"Algemeen", color:"#4a90e2" }],
    labels: [],
-   settings: { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" }
+   settings: { emailTo:"", notifyHour:12, notifyMinute:0 }
  };
 }
 
@@ -830,7 +704,6 @@ function migrateTask(t){
  if (!("tags" in t)) t.tags = "";
  if (!("notes" in t)) t.notes = "";
  if (!("planned" in t)) t.planned = "";
- if (!("plannedEnd" in t)) t.plannedEnd = "";
  if (!("created" in t)) t.created = Date.now();
  if (!("updated" in t)) t.updated = t.created;
  if (!Array.isArray(t.checklist)) t.checklist = [];
@@ -874,11 +747,10 @@ function load(){
    s.projects = normalizeProjects(s.projects);
    s.labels = normalizeLabels(s.labels);
 
-  if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" };
-  s.settings.notifyHour = clampInt(s.settings.notifyHour, 12);
-  s.settings.notifyMinute = clampInt(s.settings.notifyMinute, 0);
-  s.settings.emailTo = String(s.settings.emailTo ?? "");
-  s.settings.weekMode = (s.settings.weekMode === "workweek") ? "workweek" : "full";
+   if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0 };
+   s.settings.notifyHour = clampInt(s.settings.notifyHour, 12);
+   s.settings.notifyMinute = clampInt(s.settings.notifyMinute, 0);
+   s.settings.emailTo = String(s.settings.emailTo ?? "");
 
    state = s;
    s.tasks = s.tasks.map(migrateTask);
@@ -896,163 +768,7 @@ function save(){
 }
 
 function weekDate(){ return parseWeek(state.week); }
-function setWeek(d){
- const next = startOfWeek(d);
- state.week = next.toISOString();
- save();
-}
-
-function rollOverTasks(prevWeekStart, newWeekStart){
- const newStartMs = newWeekStart.getTime();
- const isWorkweek = (state.settings && state.settings.weekMode === "workweek");
- let changed = false;
- for (const t of (state.tasks || [])){
-  if (t.status === "Done" || t.status === "Archived") continue;
-  const planned = dateFromYMD(t.planned);
-  if (!planned) continue;
-
-   const endRaw = dateFromYMD(t.plannedEnd || t.planned);
-   let startMs = planned.getTime();
-   let endMs = (endRaw || planned).getTime();
-   if (endMs < startMs){
-     const tmp = startMs; startMs = endMs; endMs = tmp;
-   }
-
-   if (isWorkweek){
-     const startDate = new Date(startMs);
-     const day = startDate.getDay();
-     if (day === 0 || day === 6){
-       const deltaDays = (day === 0) ? 1 : 2;
-       startDate.setDate(startDate.getDate() + deltaDays);
-       const endDate = new Date(endMs);
-       endDate.setDate(endDate.getDate() + deltaDays);
-       startMs = startDate.getTime();
-       endMs = endDate.getTime();
-       t.planned = ymdFromDate(startDate);
-       if (t.plannedEnd){
-         t.plannedEnd = ymdFromDate(endDate);
-       } else {
-         const durationDays = Math.round((endMs - startMs) / 86400000);
-       t.plannedEnd = durationDays > 0 ? ymdFromDate(endDate) : "";
-      }
-      t.updated = Date.now();
-      changed = true;
-     }
-   }
-
-   if (endMs >= newStartMs) continue;
-
-   const durationDays = Math.round((endMs - startMs) / 86400000);
-   const newStart = new Date(newWeekStart);
-   const newEnd = new Date(newWeekStart);
-   newEnd.setDate(newEnd.getDate() + durationDays);
-
-   t.planned = ymdFromDate(newStart);
-   if (t.plannedEnd){
-     t.plannedEnd = ymdFromDate(newEnd);
-   } else {
-     t.plannedEnd = durationDays > 0 ? ymdFromDate(newEnd) : "";
-   }
-   t.updated = Date.now();
-   changed = true;
- }
- return changed;
-}
-
-function autoRollOverByToday(){
- const todayStart = startOfWeek(new Date());
- if (rollOverTasks(todayStart, todayStart)) save();
-}
-
-let detailsObserver = null;
-
-function collapseAllDetails(){
- openTaskIds.clear();
- document.querySelectorAll("details[open]").forEach(d => { d.open = false; });
-}
-
-function observeDetails(){
- if (!("IntersectionObserver" in window)) return;
- if (!detailsObserver){
-   detailsObserver = new IntersectionObserver((entries) => {
-     for (const entry of entries){
-       if (entry.isIntersecting) continue;
-       const el = entry.target;
-       if (el.open){
-         el.open = false;
-         const id = el.dataset.taskid;
-         if (id) openTaskIds.delete(id);
-       }
-     }
-   });
- }
- detailsObserver.disconnect();
- document.querySelectorAll("details[data-close-on-hide=\"1\"]").forEach(el => {
-   detailsObserver.observe(el);
- });
-}
-
-function focusTodayInWeek(){
- const today = new Date();
- const weekStart = weekDate();
- if (startOfWeek(today).getTime() !== weekStart.getTime()) return;
- const id = "daywrap_" + ymdFromDate(today);
- const el = document.getElementById(id);
- if (!el) return;
- requestAnimationFrame(() => {
-  el.scrollIntoView({ block:"start", inline:"center", behavior:"smooth" });
-  const nav = document.querySelector("nav");
-  const navH = nav ? nav.offsetHeight : 0;
-  if (navH) window.scrollBy({ top: -navH - 12, left: 0, behavior: "smooth" });
- });
-}
-
-function refreshData(){
- const next = load();
- setState(next);
- renderCreate();
- rerenderVisible();
- if (!document.getElementById("settings").hidden) renderSettings();
-}
-
-function initPullToRefresh(){
- const el = document.getElementById("pullRefresh");
- if (!el) return;
- const scrollEl = document.scrollingElement || document.documentElement;
- let startY = 0;
- let pullDist = 0;
- let pulling = false;
-
- window.addEventListener("touchstart", (e) => {
-   if (scrollEl.scrollTop > 0) return;
-   startY = e.touches[0].clientY;
-   pullDist = 0;
-   pulling = true;
- }, { passive: true });
-
- window.addEventListener("touchmove", (e) => {
-   if (!pulling) return;
-   pullDist = e.touches[0].clientY - startY;
-   if (pullDist <= 10) return;
-   el.hidden = false;
-   el.classList.add("show");
-   el.textContent = pullDist > 60 ? "Loslaten om te vernieuwen" : "Vernieuwen...";
- }, { passive: true });
-
- window.addEventListener("touchend", () => {
-   if (!pulling) return;
-   if (pullDist > 60){
-     el.textContent = "Vernieuwd";
-     refreshData();
-   }
-   setTimeout(() => {
-     el.classList.remove("show");
-     el.hidden = true;
-   }, 400);
-   pulling = false;
-   pullDist = 0;
- }, { passive: true });
-}
+function setWeek(d){ state.week = startOfWeek(d).toISOString(); save(); }
 
 /** --- Navigation --- **/
 function setActiveTab(id){
@@ -1064,7 +780,6 @@ function setActiveTab(id){
 }
 
 function show(id){
- collapseAllDetails();
  document.querySelectorAll("section").forEach(s=>s.hidden=true);
  const el = document.getElementById(id);
  if (el) el.hidden=false;
@@ -1073,7 +788,7 @@ function show(id){
  setActiveTab(id);
 
  if (id === "tasks") renderTasks();
- if (id === "week") { setWeek(new Date()); renderWeek(); }
+ if (id === "week") renderWeek();
  if (id === "settings") renderSettings();
  if (id === "create") renderCreate();
 }
@@ -1108,20 +823,19 @@ function addTask(e){
  e.preventDefault();
 
  const planned = (createPlanned.value || "");
-  const status = planned ? "Planned" : "Todo";
+ const status = planned ? "Planned" : "Todo";
 
-  const t = {
-    id: uid(),
-    title: title.value.trim(),
+ const t = {
+   id: uid(),
+   title: title.value.trim(),
    created: Date.now(),
    updated: Date.now(),
    project: createProject.value || (getProjectNames()[0] || "Algemeen"),
    priority: createPriority.value || "Medium",
    status,
    estimateHours: Number(createEstimate.value || 1),
-    planned,
-    plannedEnd: createPlannedEnd.value || "",
-    deadline: createDeadline.value || "",
+   planned,
+   deadline: createDeadline.value || "",
    tags: (createTags.value || "").trim(),
    notes: "",
    checklist: []
@@ -1134,7 +848,6 @@ function addTask(e){
  createPriority.value = "Medium";
  createEstimate.value = 1;
  createPlanned.value = "";
- createPlannedEnd.value = "";
  createDeadline.value = "";
  createTags.value = "";
 
@@ -1165,19 +878,10 @@ function sortTasks(list){
 function updateTaskField(id, field, value){
  const t = state.tasks.find(x=>x.id===id);
  if (!t) return;
- const prevPlanned = t.planned;
  t[field] = value;
  t.updated = Date.now();
 
  if (field === "planned"){
-   setPlannedDate(t, t.planned, prevPlanned);
-   if (t.planned && t.status === "Todo") t.status = "Planned";
-   if (!t.planned && t.status === "Planned") t.status = "Todo";
-   bumpWeekendPlanned(t);
- }
-
- if (field === "plannedEnd"){
-   if (t.plannedEnd && !t.planned) t.planned = t.plannedEnd;
    if (t.planned && t.status === "Todo") t.status = "Planned";
    if (!t.planned && t.status === "Planned") t.status = "Todo";
  }
@@ -1195,83 +899,24 @@ function rerenderVisible(){
  if (!document.getElementById("week").hidden) renderWeek();
 }
 
-function bumpWeekendPlanned(t){
- if (!t || !t.planned) return false;
- if (!(state.settings && state.settings.weekMode === "workweek")) return false;
- const startDate = dateFromYMD(t.planned);
- if (!startDate) return false;
- const day = startDate.getDay();
- if (day !== 0 && day !== 6) return false;
-
- const endDate = dateFromYMD(t.plannedEnd || t.planned) || new Date(startDate);
- const durationDays = Math.round((endDate - startDate) / 86400000);
- const deltaDays = (day === 0) ? 1 : 2;
- startDate.setDate(startDate.getDate() + deltaDays);
- endDate.setDate(endDate.getDate() + deltaDays);
-
- t.planned = ymdFromDate(startDate);
- if (t.plannedEnd){
-   t.plannedEnd = ymdFromDate(endDate);
- } else {
-   t.plannedEnd = durationDays > 0 ? ymdFromDate(endDate) : "";
- }
- t.updated = Date.now();
- return true;
-}
-
-function shiftPlannedEnd(t, prevPlanned, nextPlanned){
- const prev = dateFromYMD(prevPlanned);
- const next = dateFromYMD(nextPlanned);
- const end = dateFromYMD(t && t.plannedEnd);
- if (!prev || !next || !end) return;
- const deltaDays = Math.round((next - prev) / 86400000);
- if (!deltaDays) return;
- const newEnd = new Date(end);
- newEnd.setDate(newEnd.getDate() + deltaDays);
- t.plannedEnd = ymdFromDate(newEnd);
-}
-function setPlannedDate(t, nextPlanned, prevPlanned){
- if (!t) return;
- const prev = (prevPlanned !== undefined) ? prevPlanned : t.planned;
- if (prev === nextPlanned) return;
- t.planned = nextPlanned;
- t.plannedEnd = "";
-}
-
-function taskSpansDate(t, ymd){
- const d = dateFromYMD(ymd);
- if (!d) return false;
- const s = dateFromYMD(t.planned);
- if (!s) return false;
- const eRaw = dateFromYMD(t.plannedEnd || t.planned);
- const e = eRaw || s;
- const sTime = s.getTime();
- const eTime = e.getTime();
- const min = Math.min(sTime, eTime);
- const max = Math.max(sTime, eTime);
- const dt = d.getTime();
- return dt >= min && dt <= max;
-}
-
 /** --- Planning date (commit-on-blur) --- **/
 function rememberDate(el){ el.dataset.prev = el.value || ""; }
 function commitDate(el){
  const id = el.dataset.taskid;
+ const prev = el.dataset.prev || "";
  const next = el.value || "";
+ if (prev === next) return;
 
  const t = state.tasks.find(x => x.id === id);
  if (!t) return;
 
- if (t.planned === next) return;
- setPlannedDate(t, next);
+ t.planned = next;
 
  if (next) {
    if (t.status === "Todo") t.status = "Planned";
  } else {
    if (t.status === "Planned") t.status = "Todo";
  }
-
- bumpWeekendPlanned(t);
 
  t.updated = Date.now();
  save();
@@ -1281,7 +926,7 @@ function commitDate(el){
 function planToday(id){
  const t = state.tasks.find(x=>x.id===id);
  if (!t) return;
- setPlannedDate(t, ymdFromDate(new Date()));
+ t.planned = ymdFromDate(new Date());
  if (t.status === "Todo") t.status = "Planned";
  t.updated = Date.now();
  save();
@@ -1290,7 +935,7 @@ function planToday(id){
 function clearPlan(id){
  const t = state.tasks.find(x=>x.id===id);
  if (!t) return;
- setPlannedDate(t, "");
+ t.planned = "";
  if (t.status === "Planned") t.status = "Todo";
  t.updated = Date.now();
  save();
@@ -1360,78 +1005,6 @@ function deleteChecklistItem(taskId, itemId){
  save();
  rerenderVisible();
 }
-function updateChecklistText(taskId, itemId, nextText){
- const t = state.tasks.find(x=>x.id===taskId);
- if (!t) return;
- const it = t.checklist.find(i=>i.id===itemId);
- if (!it) return;
- it.text = String(nextText || "").trim();
- t.updated = Date.now();
- save();
- rerenderVisible();
-}
-function moveChecklistItem(taskId, itemId, dir){
- const t = state.tasks.find(x=>x.id===taskId);
- if (!t) return;
- const idx = t.checklist.findIndex(i=>i.id===itemId);
- if (idx < 0) return;
- const next = idx + dir;
- if (next < 0 || next >= t.checklist.length) return;
- const [it] = t.checklist.splice(idx, 1);
- t.checklist.splice(next, 0, it);
- t.updated = Date.now();
- save();
- rerenderVisible();
-}
-function checklistForRender(t){
- const list = Array.isArray(t?.checklist) ? t.checklist.slice() : [];
- return list.sort((a,b) => Number(!!a.done) - Number(!!b.done));
-}
-function enableChecklistEdit(e, taskId, itemId, el){
- e.stopPropagation();
- e.preventDefault();
-
- if (!el || el.dataset.editing === "1") return;
- const t = state.tasks.find(x=>x.id===taskId);
- if (!t) return;
- const it = t.checklist.find(x=>x.id===itemId);
- if (!it) return;
-
- el.dataset.editing = "1";
- el.contentEditable = "true";
- el.focus();
-
- const sel = window.getSelection();
- if (sel){
-   const range = document.createRange();
-   range.selectNodeContents(el);
-   sel.removeAllRanges();
-   sel.addRange(range);
- }
-
- function finish(saveIt){
-   if (saveIt){
-     const next = (el.textContent || "").trim();
-     if (next) updateChecklistText(taskId, itemId, next);
-     else el.textContent = it.text;
-   } else {
-     el.textContent = it.text;
-   }
-   el.contentEditable = "false";
-   delete el.dataset.editing;
- }
-
- el.onkeydown = (ev) => {
-   if (ev.key === "Enter"){
-     ev.preventDefault();
-     finish(true);
-   } else if (ev.key === "Escape"){
-     ev.preventDefault();
-     finish(false);
-   }
- };
- el.onblur = () => finish(true);
-}
 function checklistProgress(t){
  const total = (t.checklist || []).length;
  const done = (t.checklist || []).filter(i=>i.done).length;
@@ -1468,296 +1041,7 @@ function buildFilters(){
 }
 
 /** --- Render tasks --- **/
-function toggleTaskOpen(id, isOpen){
- if (isOpen) openTaskIds.add(id);
- else openTaskIds.delete(id);
-}
-
-function enableTitleEdit(e, id, el){
- e.stopPropagation();
- e.preventDefault();
-
- if (!el || el.dataset.editing === "1") return;
- const t = state.tasks.find(x=>x.id===id);
- if (!t) return;
-
- el.dataset.editing = "1";
- el.contentEditable = "true";
- el.focus();
-
- const sel = window.getSelection();
- if (sel){
-   const range = document.createRange();
-   range.selectNodeContents(el);
-   sel.removeAllRanges();
-   sel.addRange(range);
- }
-
- function finish(saveIt){
-   if (saveIt){
-     const next = (el.textContent || "").trim();
-     if (next) updateTaskField(id, "title", next);
-     else el.textContent = t.title;
-   } else {
-     el.textContent = t.title;
-   }
-   el.contentEditable = "false";
-   delete el.dataset.editing;
- }
-
- el.onkeydown = (ev) => {
-   if (ev.key === "Enter"){
-     ev.preventDefault();
-     finish(true);
-   } else if (ev.key === "Escape"){
-     ev.preventDefault();
-     finish(false);
-   }
- };
- el.onblur = () => finish(true);
-}
-
-function groupByProject(list){
- const order = [];
- const map = new Map();
- for (const t of (list || [])){
-   const key = t.project || "Algemeen";
-   if (!map.has(key)){
-     map.set(key, []);
-     order.push(key);
-   }
-   map.get(key).push(t);
- }
- return order.map(project => ({ project, tasks: map.get(project) }));
-}
-
-function createTaskCard(t){
- const prog = checklistProgress(t);
- const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
- const labels = splitTags(t.tags);
- const projectColor = getProjectColor(t.project);
- const checklistItems = checklistForRender(t);
-
- const card = document.createElement("div");
- card.className = "task-card";
- if (!t.planned) card.classList.add("unplanned");
- if (t.status === "Done") card.classList.add("done-row");
- card.classList.add(`pri-${t.priority || "Medium"}`);
-
- card.innerHTML = `
-   <div class="task-card-top">
-     <details data-close-on-hide="1" data-taskid="${escapeAttr(t.id)}" ${openTaskIds.has(t.id) ? "open" : ""} ontoggle="toggleTaskOpen('${t.id}', this.open)">
-       <summary>
-         <div class="summary-row">
-           <div style="flex:1; min-width:0;">
-             <strong style="word-break:break-word;">
-               <span class="task-title"
-                     ondblclick="enableTitleEdit(event,'${t.id}', this)"
-                     onclick="event.stopPropagation()">${escapeHtml(t.title)}</span>
-             </strong>
-             <div class="task-card-meta">
-               ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ""}
-               <span class="pill">${escapeHtml(t.priority)}</span>
-               <span class="pill">${escapeHtml(t.status)}</span>
-               <span class="pill">CL ${progText}</span>
-               ${t.planned ? `<span class="pill">Gepland ${escapeHtml(t.planned)}</span>` : `<span class="pill">Niet ingepland</span>`}
-               ${t.plannedEnd && t.plannedEnd !== t.planned ? `<span class="pill">Tot ${escapeHtml(t.plannedEnd)}</span>` : ``}
-               ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
-               ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
-             </div>
-           </div>
-           <div class="small muted" style="white-space:nowrap;">Bewerk ▾</div>
-         </div>
-       </summary>
-
-       ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
-
-       <div class="task-card-actions">
-         <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
-         <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
-         <button class="btn" type="button" onclick="deleteTask('${t.id}')">Verwijder</button>
-       </div>
-
-       <div class="cl-wrap" style="margin-top:12px;">
-         <div class="cl-head">
-           <strong>Mini-checklist</strong>
-           <span class="small">${progText}</span>
-         </div>
-
-         <div class="mini-row" style="margin-top:8px;">
-           <input id="cl_new_${t.id}" placeholder="Checklist item toevoegen">
-           <button class="btn btn-small" type="button" onclick="addChecklistItem('${t.id}')">+</button>
-         </div>
-
-         <ul class="cl-list">
-           ${checklistItems.map(it => `
-             <li class="cl-item">
-               <input type="checkbox"
-                      ${it.done ? "checked" : ""}
-                      onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
-               <span class="txt ${it.done ? "done" : ""}"
-                     ondblclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
-               <button class="btn btn-small" type="button" aria-label="Omhoog"
-                       onclick="moveChecklistItem('${t.id}','${it.id}', -1)">↑</button>
-               <button class="btn btn-small" type="button" aria-label="Omlaag"
-                       onclick="moveChecklistItem('${t.id}','${it.id}', 1)">↓</button>
-               <button class="btn btn-small" type="button" onclick="deleteChecklistItem('${t.id}','${it.id}')">x</button>
-             </li>
-           `).join("")}
-         </ul>
-         ${checklistItems.length === 0 ? `<div class="small muted">Nog geen checklist items.</div>` : ``}
-       </div>
-
-       <div class="task-card-edit">
-         <div class="small muted">Aangemaakt: ${new Date(t.created).toLocaleString()} · Laatst gewijzigd: ${new Date(t.updated||t.created).toLocaleString()}</div>
-
-         <label>Project</label>
-         <select onchange="updateTaskField('${t.id}','project',this.value)">
-           ${getProjectNames().map(p => `<option ${p===t.project?'selected':''}>${escapeHtml(p)}</option>`).join("")}
-         </select>
-
-         <label>Prioriteit</label>
-         <select onchange="updateTaskField('${t.id}','priority',this.value)">
-           ${opt("High", t.priority)}${opt("Medium", t.priority)}${opt("Low", t.priority)}
-         </select>
-
-         <label>Status</label>
-         <select onchange="updateTaskField('${t.id}','status',this.value)">
-           ${opt("Todo", t.status)}${opt("Planned", t.status)}${opt("Done", t.status)}${opt("Archived", t.status)}
-         </select>
-
-         <label>Schatting (uren)</label>
-         <input type="number" min="0" step="0.5"
-                value="${escapeAttr(String(t.estimateHours ?? 0))}"
-                onchange="updateTaskField('${t.id}','estimateHours', this.value==='' ? '' : Number(this.value))">
-
-         <label>Datum inplannen</label>
-         <input type="date"
-                value="${escapeAttr(t.planned||"")}"
-                data-taskid="${t.id}"
-                onfocus="rememberDate(this)"
-                onblur="commitDate(this)">
-
-         <label>Einddatum planning</label>
-         <input type="date"
-                value="${escapeAttr(t.plannedEnd||"")}"
-                onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
-
-         <div class="row" style="margin-top:6px;">
-           <button class="btn" type="button" onclick="planToday('${t.id}')">Plan vandaag</button>
-           <button class="btn" type="button" onclick="clearPlan('${t.id}')">Planning wissen</button>
-         </div>
-
-         <label>Deadline</label>
-         <input type="date"
-                value="${escapeAttr(t.deadline||"")}"
-                onchange="updateTaskField('${t.id}','deadline', this.value)">
-
-         <label>Labels (komma-gescheiden)</label>
-         <input value="${escapeAttr(t.tags||"")}"
-                onchange="updateTaskField('${t.id}','tags', this.value)">
-
-         <label>Opmerkingen</label>
-         <textarea rows="3"
-                   onchange="updateTaskField('${t.id}','notes', this.value)">${escapeHtml(t.notes||"")}</textarea>
-       </div>
-
-     </details>
-   </div>
- `;
-
- return card;
-}
-
-function createWeekTaskCard(t){
- const projectColor = getProjectColor(t.project);
- const labels = splitTags(t.tags);
- const checklistItems = checklistForRender(t);
-
- const card = document.createElement("div");
- card.className = `week-task pri-${t.priority || "Medium"}`;
- if (t.status === "Done") card.classList.add("done-row");
-
- card.innerHTML = `
-   <details data-close-on-hide="1">
-     <summary>
-       <div class="week-summary-row">
-         <div style="flex:1; min-width:0;">
-           <div class="week-task-title">${escapeHtml(t.title)}</div>
-
-          <div class="week-task-meta">
-            ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
-            ${t.notes ? `<span class="pill">Opmerking</span>` : ``}
-          </div>
-          ${checklistItems.length ? `
-            <ul class="week-cl-summary">
-              ${checklistItems.map(it => `
-                <li class="${it.done ? "done" : ""}">
-                  <input type="checkbox"
-                         ${it.done ? "checked" : ""}
-                         onclick="event.stopPropagation()"
-                         onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
-                  <span class="txt ${it.done ? "done" : ""}"
-                        ondblclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
-                </li>
-              `).join("")}
-            </ul>
-          ` : ``}
-        </div>
-        <div class="small muted" style="white-space:nowrap;">▾</div>
-      </div>
-    </summary>
-
-    <div class="week-task-meta" style="margin-top:8px;">
-      <span class="pill">${escapeHtml(t.priority)}</span>
-      <span class="pill">${escapeHtml(t.status)}</span>
-      ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
-      ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
-    </div>
-
-    ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
-
-     ${checklistItems.length === 0 ? `` : `
-       <div class="week-cl">
-         <ul>
-           ${checklistItems.map(it => `
-             <li>
-               <input type="checkbox"
-                      ${it.done ? "checked" : ""}
-                      onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
-               <span class="txt ${it.done ? "done" : ""}"
-                     ondblclick="enableChecklistEdit(event,'${t.id}','${it.id}', this)">${escapeHtml(it.text)}</span>
-             </li>
-           `).join("")}
-         </ul>
-       </div>
-     `}
-
-     <label class="small" style="margin-top:8px;">Datum inplannen</label>
-     <input type="date"
-            value="${escapeAttr(t.planned||"")}"
-            data-taskid="${t.id}"
-            onfocus="rememberDate(this)"
-            onblur="commitDate(this)">
-
-     <label class="small">Einddatum planning</label>
-     <input type="date"
-            value="${escapeAttr(t.plannedEnd||"")}"
-            onchange="updateTaskField('${t.id}','plannedEnd', this.value)">
-
-     <div class="week-actions">
-       <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
-       <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
-       <button class="btn" type="button" onclick="clearPlan('${t.id}')">Uit dag halen</button>
-     </div>
-   </details>
- `;
-
- return card;
-}
-
 function renderTasks(){
- autoRollOverByToday();
  buildFilters();
 
  const listEl = document.getElementById("taskList");
@@ -1783,9 +1067,6 @@ function renderTasks(){
    }
    return true;
  });
- const openList = list.filter(t => t.status !== "Done");
- const doneList = list.filter(t => t.status === "Done");
- list = openList.concat(doneList);
 
  if (list.length === 0){
    const empty = document.createElement("div");
@@ -1795,31 +1076,128 @@ function renderTasks(){
    return;
  }
 
- const openGroups = groupByProject(openList);
- const doneGroups = groupByProject(doneList).map(g => ({ ...g, done: true }));
- const allGroups = openGroups.concat(doneGroups);
+ for (const t of list) {
+   const prog = checklistProgress(t);
+   const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
 
- for (const group of allGroups){
-   const groupEl = document.createElement("div");
-   groupEl.className = "group-block";
-   if (group.done) groupEl.classList.add("group-done");
+   const labels = splitTags(t.tags);
+   const projectColor = getProjectColor(t.project);
 
-   const projectColor = getProjectColor(group.project);
-   groupEl.innerHTML = `
-     <div class="group-head">
-       <span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(group.project)}</span>
-       ${group.done ? `<span class="badge">Done</span>` : ``}
+   const card = document.createElement("div");
+   card.className = "task-card";
+   if (!t.planned) card.classList.add("unplanned");
+   if (t.status === "Done") card.classList.add("done-row");
+   card.classList.add(`pri-${t.priority || "Medium"}`);
+
+   card.innerHTML = `
+     <div class="task-card-top">
+       <details>
+         <summary>
+           <div class="summary-row">
+             <div style="flex:1; min-width:0;">
+               <strong style="word-break:break-word;">${escapeHtml(t.title)}</strong>
+               <div class="task-card-meta">
+                 ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ""}
+                 <span class="pill">${escapeHtml(t.priority)}</span>
+                 <span class="pill">${escapeHtml(t.status)}</span>
+                 <span class="pill">CL ${progText}</span>
+                 ${t.planned ? `<span class="pill">Gepland ${escapeHtml(t.planned)}</span>` : `<span class="pill">Niet ingepland</span>`}
+                 ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
+                 ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
+               </div>
+             </div>
+             <div class="small muted" style="white-space:nowrap;">Bewerk ▾</div>
+           </div>
+         </summary>
+
+         ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
+
+         <div class="task-card-actions">
+           <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
+           <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
+           <button class="btn" type="button" onclick="deleteTask('${t.id}')">Verwijder</button>
+         </div>
+
+         <div class="cl-wrap" style="margin-top:12px;">
+           <div class="cl-head">
+             <strong>Mini-checklist</strong>
+             <span class="small">${progText}</span>
+           </div>
+
+           <div class="mini-row" style="margin-top:8px;">
+             <input id="cl_new_${t.id}" placeholder="Checklist item toevoegen">
+             <button class="btn btn-small" type="button" onclick="addChecklistItem('${t.id}')">+</button>
+           </div>
+
+           <ul class="cl-list">
+             ${(t.checklist||[]).map(it => `
+               <li class="cl-item">
+                 <input type="checkbox"
+                        ${it.done ? "checked" : ""}
+                        onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
+                 <span class="txt ${it.done ? "done" : ""}">${escapeHtml(it.text)}</span>
+                 <button class="btn btn-small" type="button" onclick="deleteChecklistItem('${t.id}','${it.id}')">x</button>
+               </li>
+             `).join("")}
+           </ul>
+           ${(t.checklist||[]).length === 0 ? `<div class="small muted">Nog geen checklist items.</div>` : ``}
+         </div>
+
+         <div class="task-card-edit">
+           <div class="small muted">Aangemaakt: ${new Date(t.created).toLocaleString()} · Laatst gewijzigd: ${new Date(t.updated||t.created).toLocaleString()}</div>
+
+           <label>Project</label>
+           <select onchange="updateTaskField('${t.id}','project',this.value)">
+             ${getProjectNames().map(p => `<option ${p===t.project?'selected':''}>${escapeHtml(p)}</option>`).join("")}
+           </select>
+
+           <label>Prioriteit</label>
+           <select onchange="updateTaskField('${t.id}','priority',this.value)">
+             ${opt("High", t.priority)}${opt("Medium", t.priority)}${opt("Low", t.priority)}
+           </select>
+
+           <label>Status</label>
+           <select onchange="updateTaskField('${t.id}','status',this.value)">
+             ${opt("Todo", t.status)}${opt("Planned", t.status)}${opt("Done", t.status)}${opt("Archived", t.status)}
+           </select>
+
+           <label>Schatting (uren)</label>
+           <input type="number" min="0" step="0.5"
+                  value="${escapeAttr(String(t.estimateHours ?? 0))}"
+                  onchange="updateTaskField('${t.id}','estimateHours', this.value==='' ? '' : Number(this.value))">
+
+           <label>Datum inplannen</label>
+           <input type="date"
+                  value="${escapeAttr(t.planned||"")}"
+                  data-taskid="${t.id}"
+                  onfocus="rememberDate(this)"
+                  onblur="commitDate(this)">
+
+           <div class="row" style="margin-top:6px;">
+             <button class="btn" type="button" onclick="planToday('${t.id}')">Plan vandaag</button>
+             <button class="btn" type="button" onclick="clearPlan('${t.id}')">Planning wissen</button>
+           </div>
+
+           <label>Deadline</label>
+           <input type="date"
+                  value="${escapeAttr(t.deadline||"")}"
+                  onchange="updateTaskField('${t.id}','deadline', this.value)">
+
+           <label>Labels (komma-gescheiden)</label>
+           <input value="${escapeAttr(t.tags||"")}"
+                  onchange="updateTaskField('${t.id}','tags', this.value)">
+
+           <label>Opmerkingen</label>
+           <textarea rows="3"
+                     onchange="updateTaskField('${t.id}','notes', this.value)">${escapeHtml(t.notes||"")}</textarea>
+         </div>
+
+       </details>
      </div>
    `;
 
-   const body = document.createElement("div");
-   body.className = "group-body";
-   for (const t of group.tasks) body.appendChild(createTaskCard(t));
-   groupEl.appendChild(body);
-   listEl.appendChild(groupEl);
+   listEl.appendChild(card);
  }
-
- observeDetails();
 }
 
 /** --- Week view --- **/
@@ -1835,37 +1213,27 @@ function goThisWeek(){
 }
 
 function renderWeek(){
- autoRollOverByToday();
  const w = weekDate();
  weekTitle.textContent = "Week vanaf " + w.toLocaleDateString();
  weekGrid.innerHTML = "";
- const isWorkweek = (state.settings && state.settings.weekMode === "workweek");
- weekGrid.classList.toggle("workweek", isWorkweek);
- const daysToShow = isWorkweek ? 5 : 7;
- const todayIso = ymdFromDate(new Date());
 
- for (let i=0; i<daysToShow; i++){
+ for (let i=0; i<7; i++){
    const d = new Date(w);
    d.setDate(d.getDate() + i);
    const dIso = ymdFromDate(d);
-   const isToday = dIso === todayIso;
 
-   const dayTasksSorted = state.tasks
-     .filter(t => taskSpansDate(t, dIso) && t.status !== "Archived")
+   const dayTasks = state.tasks
+     .filter(t => t.planned === dIso && t.status !== "Archived")
      .sort((a,b) => ((b.created||0)-(a.created||0)));
-   const openTasks = dayTasksSorted.filter(t => t.status !== "Done");
-   const doneTasks = dayTasksSorted.filter(t => t.status === "Done");
-   const dayTasks = openTasks.concat(doneTasks);
 
-  const dayDiv = document.createElement("div");
-  dayDiv.className = `week-day${isToday ? " today" : ""}`;
-  dayDiv.id = `daywrap_${dIso}`;
+   const dayDiv = document.createElement("div");
+   dayDiv.className = "week-day";
 
    dayDiv.innerHTML = `
      <div class="week-day-head">
        <div>
-         <div class="week-day-name">${d.toLocaleDateString(undefined, { weekday: 'long' })}${isToday ? `<span class="week-today-badge">Vandaag</span>` : ``}</div>
-         <div class="week-day-date">${escapeHtml(dIso)}</div>
+         <strong>${escapeHtml(dIso)}</strong>
+         <div class="small">${d.toLocaleDateString(undefined, { weekday: 'long' })}</div>
        </div>
        <div class="small">${dayTasks.length} taak/taken</div>
      </div>
@@ -1884,33 +1252,56 @@ function renderWeek(){
      body.appendChild(empty);
      continue;
    }
-   const openGroups = groupByProject(openTasks);
-   const doneGroups = groupByProject(doneTasks).map(g => ({ ...g, done: true }));
-   const dayGroups = openGroups.concat(doneGroups);
 
-   for (const group of dayGroups){
-     const groupEl = document.createElement("div");
-     groupEl.className = "week-group";
-     if (group.done) groupEl.classList.add("group-done");
+   for (const t of dayTasks) {
+     const prog = checklistProgress(t);
+     const progText = prog.total ? `${prog.done}/${prog.total}` : `0/0`;
 
-     const projectColor = getProjectColor(group.project);
-     groupEl.innerHTML = `
-       <div class="week-group-head">
-         <span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(group.project)}</span>
-         ${group.done ? `<span class="badge">Done</span>` : ``}
+     const projectColor = getProjectColor(t.project);
+     const labels = splitTags(t.tags);
+
+     const card = document.createElement("div");
+     card.className = `week-task pri-${t.priority || "Medium"}`;
+
+     card.innerHTML = `
+       <div class="week-task-title">${escapeHtml(t.title)}</div>
+
+       <div class="week-task-meta">
+         ${t.project ? `<span class="pill"><span class="dot" style="background:${escapeAttr(projectColor)}"></span>${escapeHtml(t.project)}</span>` : ``}
+         <span class="pill">${escapeHtml(t.priority)}</span>
+         <span class="pill">${escapeHtml(t.status)}</span>
+         <span class="pill">CL ${progText}</span>
+         ${t.deadline ? `<span class="pill">${stripTags(deadlineBadge(t))}</span>` : ``}
+         ${labels.map(l => `<span class="pill"><span class="dot" style="background:${escapeAttr(getLabelColor(l))}"></span>${escapeHtml(l)}</span>`).join("")}
+       </div>
+
+       ${t.notes ? `<div class="note"><strong class="small">Opmerkingen</strong>\n${escapeHtml(t.notes)}</div>` : ``}
+
+       ${(t.checklist||[]).length === 0 ? `` : `
+         <div class="week-cl">
+           <ul>
+             ${(t.checklist||[]).map(it => `
+               <li>
+                 <input type="checkbox"
+                        ${it.done ? "checked" : ""}
+                        onchange="toggleChecklistItem('${t.id}','${it.id}', this.checked)">
+                 <span class="txt ${it.done ? "done" : ""}">${escapeHtml(it.text)}</span>
+               </li>
+             `).join("")}
+           </ul>
+         </div>
+       `}
+
+       <div class="week-actions">
+         <button class="btn" type="button" onclick="markDone('${t.id}')">Voltooi</button>
+         <button class="btn" type="button" onclick="archiveTask('${t.id}')">Archiveer</button>
+         <button class="btn" type="button" onclick="clearPlan('${t.id}')">Uit dag halen</button>
        </div>
      `;
 
-     const groupBody = document.createElement("div");
-     groupBody.className = "week-group-body";
-     for (const t of group.tasks) groupBody.appendChild(createWeekTaskCard(t));
-     groupEl.appendChild(groupBody);
-     body.appendChild(groupEl);
+     body.appendChild(card);
    }
  }
-
- observeDetails();
- focusTodayInWeek();
 }
 
 /** --- Settings: projects + labels --- **/
@@ -1931,8 +1322,6 @@ function renderSettings(){
 
      <div class="row" style="margin-top:6px;">
        <input type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
-       <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
-       <button class="btn" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
 
        <div style="flex: 3 1 260px;">
          <button class="btn-inline btn-inline-primary" type="button"
@@ -1976,7 +1365,6 @@ function renderSettings(){
  emailTo.value = state.settings.emailTo || "";
  notifyHour.value = state.settings.notifyHour ?? 12;
  notifyMinute.value = state.settings.notifyMinute ?? 0;
- weekMode.value = state.settings.weekMode || "full";
 
  renderCreate();
  rerenderVisible();
@@ -1991,21 +1379,6 @@ function addProject(){
  state.projects.push({ name, color });
  save();
  newProject.value = "";
- renderSettings();
-}
-function renameProject(oldName, nextName){
- const from = String(oldName || "").trim();
- const to = String(nextName || "").trim();
- if (!from || !to) { alert("Projectnaam mag niet leeg zijn."); return; }
- if (from === to) return;
- if (getProjectNames().includes(to)) { alert("Project bestaat al."); return; }
-
- const p = state.projects.find(x => x.name === from);
- if (!p) return;
- p.name = to;
-
- state.tasks = state.tasks.map(t => (t.project === from ? { ...t, project: to } : t));
- save();
  renderSettings();
 }
 function setProjectColor(name, color){
@@ -2053,26 +1426,6 @@ function removeLabel(name){
  renderSettings();
 }
 
-function setWeekMode(value){
- if (!state.settings) state.settings = { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" };
- const prevMode = state.settings.weekMode || "full";
- const nextMode = (value === "workweek") ? "workweek" : "full";
- state.settings.weekMode = nextMode;
-
- let shifted = false;
- if (nextMode === "workweek"){
-   for (const t of (state.tasks || [])){
-     if (t.status === "Done" || t.status === "Archived") continue;
-     if (bumpWeekendPlanned(t)) shifted = true;
-   }
- }
-
- save();
- if (shifted) rerenderVisible();
- if (typeof weekMode !== "undefined") weekMode.value = nextMode;
- if (!document.getElementById("week").hidden) renderWeek();
-}
-
 function saveSettings(){
  state.settings.emailTo = (emailTo.value || "").trim();
  state.settings.notifyHour = clampInt(notifyHour.value, 12);
@@ -2096,7 +1449,7 @@ function csvLine(arr){ return arr.map(csvEscape).join(",") + "\n"; }
 function exportCSV(){
  const header = [
    "TYPE",
-   "id","title","project","priority","status","estimateHours","planned","plannedEnd","deadline","tags","notes","created","updated","checklistJson",
+   "id","title","project","priority","status","estimateHours","planned","deadline","tags","notes","created","updated","checklistJson",
    "name","color",
    "emailTo","notifyHour","notifyMinute"
  ];
@@ -2104,9 +1457,9 @@ function exportCSV(){
  let out = "";
  out += csvLine(header);
 
-  out += csvLine([
+ out += csvLine([
    "SETTINGS",
-   "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+   "", "", "", "", "", "", "", "", "", "", "", "", "", "",
    "", "",
    state.settings.emailTo || "",
    state.settings.notifyHour ?? 12,
@@ -2114,40 +1467,39 @@ function exportCSV(){
  ]);
 
  for (const p of (state.projects||[])){
-  out += csvLine([
-    "PROJECT",
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-    p.name || "",
-    p.color || "",
-    "", "", ""
-  ]);
+   out += csvLine([
+     "PROJECT",
+     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+     p.name || "",
+     p.color || "",
+     "", "", ""
+   ]);
  }
 
  for (const l of (state.labels||[])){
-  out += csvLine([
-    "LABEL",
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-    l.name || "",
-    l.color || "",
-    "", "", ""
-  ]);
+   out += csvLine([
+     "LABEL",
+     "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+     l.name || "",
+     l.color || "",
+     "", "", ""
+   ]);
  }
 
  for (const t of (state.tasks||[])){
-  out += csvLine([
-    "TASK",
-    t.id || "",
-    t.title || "",
-    t.project || "",
-    t.priority || "",
-    t.status || "",
-    (t.estimateHours ?? ""),
-    t.planned || "",
-    t.plannedEnd || "",
-    t.deadline || "",
-    t.tags || "",
-    t.notes || "",
-    t.created || "",
+   out += csvLine([
+     "TASK",
+     t.id || "",
+     t.title || "",
+     t.project || "",
+     t.priority || "",
+     t.status || "",
+     (t.estimateHours ?? ""),
+     t.planned || "",
+     t.deadline || "",
+     t.tags || "",
+     t.notes || "",
+     t.created || "",
      t.updated || "",
      JSON.stringify(Array.isArray(t.checklist) ? t.checklist : []),
      "", "",
@@ -2259,7 +1611,6 @@ function importCSV(e){
            status: String(row[idx.status] ?? "Todo") || "Todo",
            estimateHours: (row[idx.estimateHours] === "" ? "" : Number(row[idx.estimateHours] ?? 1)),
            planned: String(row[idx.planned] ?? "").trim(),
-           plannedEnd: String(row[idx.plannedEnd] ?? "").trim(),
            deadline: String(row[idx.deadline] ?? "").trim(),
            tags: String(row[idx.tags] ?? "").trim(),
            notes: String(row[idx.notes] ?? ""),
@@ -2329,11 +1680,10 @@ window.__applyCloudState = function(cloudState){
  s.projects = normalizeProjects(s.projects);
  s.labels = normalizeLabels(s.labels);
 
- if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0, weekMode:"full" };
+ if (!s.settings) s.settings = { emailTo:"", notifyHour:12, notifyMinute:0 };
  s.settings.notifyHour = clampInt(s.settings.notifyHour, 12);
  s.settings.notifyMinute = clampInt(s.settings.notifyMinute, 0);
  s.settings.emailTo = String(s.settings.emailTo ?? "");
- s.settings.weekMode = (s.settings.weekMode === "workweek") ? "workweek" : "full";
 
  s.tasks = s.tasks.map(migrateTask);
 
@@ -2342,8 +1692,6 @@ window.__applyCloudState = function(cloudState){
  renderCreate();
  rerenderVisible();
 };
-
-initPullToRefresh();
 
 /** --------------------------
 *  PDF export per project
@@ -2355,14 +1703,9 @@ function fmtDateNL(ymd){
  const d = dateFromYMD(ymd);
  return d ? d.toLocaleDateString("nl-NL") : (ymd || "");
 }
-function fmtGanttTick(dt, includeYear){
- const opts = { day:"2-digit", month:"short" };
- if (includeYear) opts.year = "numeric";
- return dt.toLocaleDateString("nl-NL", opts);
-}
 function taskGanttRange(t){
  const start = dateFromYMD(t.planned) || dateFromYMD(t.deadline);
- const end = dateFromYMD(t.plannedEnd) || dateFromYMD(t.deadline) || dateFromYMD(t.planned);
+ const end = dateFromYMD(t.deadline) || dateFromYMD(t.planned);
  if (!start && !end) return null;
 
  const s = start ? new Date(start) : new Date(end);
@@ -2373,146 +1716,6 @@ function taskGanttRange(t){
  }
  e.setDate(e.getDate() + 1);
  return { start: s, end: e };
-}
-
-function generateTotalPDF(opts){
- const includeGantt = !!(opts && opts.includeGantt);
-
- const tasks = (state.tasks || []).filter(t => t.status !== "Archived");
- const all = (state.tasks || []);
-
- if (!tasks.length && !all.length){
-   alert("Geen taken gevonden.");
-   return;
- }
-
- if (!window.jspdf || !window.jspdf.jsPDF){
-   alert("PDF library niet geladen. Check je internetverbinding of de CDN scripts.");
-   return;
- }
-
- const { jsPDF } = window.jspdf;
- const doc = new jsPDF({ unit:"pt", format:"a4" });
-
- const pageW = doc.internal.pageSize.getWidth();
- const pageH = doc.internal.pageSize.getHeight();
- const margin = 40;
-
- doc.setFont("helvetica","bold");
- doc.setFontSize(18);
- doc.text("Totale planning", margin, 55);
-
- doc.setFont("helvetica","normal");
- doc.setFontSize(10);
- doc.text(`Gegenereerd: ${new Date().toLocaleString("nl-NL")}`, margin, 72);
-
- doc.setDrawColor(0);
- doc.setFillColor(...hexToRgb("#2563eb"));
- doc.rect(pageW - margin - 80, 40, 80, 10, "F");
-
- const stats = {
-   total: all.length,
-   active: (all.filter(t => t.status !== "Archived")).length,
-   todo: all.filter(t => t.status === "Todo").length,
-   planned: all.filter(t => t.status === "Planned").length,
-   done: all.filter(t => t.status === "Done").length
- };
-
- const estTotal = sumHours(all);
- const estOpen = sumHours(all.filter(t => t.status !== "Done" && t.status !== "Archived"));
-
- let y = 95;
- doc.setFontSize(12);
- doc.setFont("helvetica","bold");
- doc.text("Samenvatting", margin, y);
- y += 10;
-
- doc.setFont("helvetica","normal");
- doc.setFontSize(10);
- const lines = [
-   `Totaal taken: ${stats.total} (actief: ${stats.active})`,
-   `Status: Todo ${stats.todo} · Planned ${stats.planned} · Done ${stats.done}`,
-   `Uren (schatting): totaal ${fmtHours(estTotal)} · open ${fmtHours(estOpen)}`
- ];
- y += 14;
- lines.forEach((l, i) => doc.text(l, margin, y + i*14));
- y += lines.length*14 + 10;
-
- const rows = sortTasks(tasks).map(t => {
-   const prog = checklistProgress(t);
-   const cl = prog.total ? `${prog.done}/${prog.total}` : "";
-   return [
-     t.title || "",
-     t.project || "",
-     t.status || "",
-     t.priority || "",
-     t.planned ? fmtDateNL(t.planned) : "",
-     t.deadline ? fmtDateNL(t.deadline) : "",
-     (t.estimateHours ?? "") !== "" ? String(t.estimateHours) : "",
-     cl,
-     (t.tags || "")
-   ];
- });
-
- doc.setFont("helvetica","bold");
- doc.setFontSize(12);
- doc.text("Taken (niet-archived)", margin, y);
- y += 8;
-
- doc.autoTable({
-   startY: y + 6,
-   margin: { left: margin, right: margin },
-   head: [["Taak", "Project", "Status", "Prio", "Gepland", "Deadline", "Uren", "CL", "Labels"]],
-   body: rows,
-   styles: { font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak" },
-   headStyles: { fillColor: [37, 99, 235], textColor: 255 },
-   columnStyles: {
-     0: { cellWidth: 150 },
-     1: { cellWidth: 70 },
-     2: { cellWidth: 50 },
-     3: { cellWidth: 40 },
-     4: { cellWidth: 60 },
-     5: { cellWidth: 60 },
-     6: { cellWidth: 35, halign:"right" },
-     7: { cellWidth: 30, halign:"center" },
-     8: { cellWidth: 85 }
-   }
- });
-
- let afterTableY = doc.lastAutoTable.finalY + 18;
-
- const withNotes = tasks.filter(t => String(t.notes||"").trim().length > 0).slice(0, 12);
- if (withNotes.length){
-   if (afterTableY > pageH - 120){
-     doc.addPage();
-     afterTableY = margin;
-   }
-   doc.setFont("helvetica","bold");
-   doc.setFontSize(12);
-   doc.text("Opmerkingen (selectie)", margin, afterTableY);
-   afterTableY += 10;
-
-   doc.setFont("helvetica","normal");
-   doc.setFontSize(9);
-   for (const t of withNotes){
-     const block = `${t.title}: ${String(t.notes).trim()}`;
-     const wrapped = doc.splitTextToSize(block, pageW - margin*2);
-     if (afterTableY + wrapped.length*11 > pageH - margin){
-       doc.addPage();
-       afterTableY = margin;
-     }
-     doc.text(wrapped, margin, afterTableY + 12);
-     afterTableY += wrapped.length*11 + 10;
-   }
- }
-
- if (includeGantt){
-   doc.addPage();
-   drawGantt(doc, "Totale planning", tasks, margin);
- }
-
- const suffix = includeGantt ? "_gantt" : "";
- doc.save(`totale_planning${suffix}.pdf`);
 }
 
 function generateProjectPDF(projectName, opts){
@@ -2689,9 +1892,14 @@ function drawGantt(doc, projectName, tasks, margin){
  const pageW = doc.internal.pageSize.getWidth();
  const pageH = doc.internal.pageSize.getHeight();
 
+ doc.setFont("helvetica","bold");
+ doc.setFontSize(16);
+ doc.text(`Gantt - ${projectName}`, margin, 55);
+
  const ganttItems = tasks
    .map(t => ({ t, r: taskGanttRange(t) }))
-   .filter(x => x.r);
+   .filter(x => x.r)
+   .slice(0, 40);
 
  if (!ganttItems.length){
    doc.setFont("helvetica","normal");
@@ -2709,114 +1917,78 @@ function drawGantt(doc, projectName, tasks, margin){
  minD = new Date(minD); minD.setHours(0,0,0,0);
  maxD = new Date(maxD); maxD.setHours(0,0,0,0);
 
- const maxPlus = new Date(maxD);
- maxPlus.setDate(maxPlus.getDate() + 1);
+ const totalDays = Math.max(1, Math.round((maxD - minD) / 86400000));
+ const chartX = margin;
+ const chartY = 90;
+ const chartW = pageW - margin*2;
+ const rowH = 14;
 
- const totalRangeDays = Math.max(1, Math.round((maxPlus - minD) / 86400000));
- const windowDays = 21;
- let pageIndex = 0;
+ doc.setFont("helvetica","normal");
+ doc.setFontSize(9);
+ doc.text(`Periode: ${minD.toLocaleDateString("nl-NL")} → ${maxD.toLocaleDateString("nl-NL")}`, margin, 75);
 
- function drawWindowFrame(winStart, winEnd, titleSuffix){
-   doc.setFont("helvetica","bold");
-   doc.setFontSize(16);
-   doc.text(`Gantt - ${projectName}${titleSuffix}`, margin, 55);
+ const labelW = 190;
+ const barX = chartX + labelW;
+ const barW = chartW - labelW;
+
+ doc.setDrawColor(220);
+ for (let d=0; d<=totalDays; d+=7){
+   const x = barX + (d/totalDays)*barW;
+   doc.line(x, chartY-10, x, pageH - margin);
+   const dt = new Date(minD); dt.setDate(dt.getDate()+d);
+   const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+   doc.text(txt, x+2, chartY-12);
+ }
+
+ let y = chartY;
+ doc.setDrawColor(230);
+ for (const it of ganttItems){
+   if (y > pageH - margin - 30){
+     doc.addPage();
+     y = margin + 40;
+     doc.setFont("helvetica","bold");
+     doc.setFontSize(12);
+     doc.text(`Gantt (vervolg) - ${projectName}`, margin, margin + 15);
+     y = margin + 35;
+   }
+
+   const t = it.t;
+   const r = it.r;
 
    doc.setFont("helvetica","normal");
    doc.setFontSize(8);
-   doc.text(
-     `Periode: ${winStart.toLocaleDateString("nl-NL")} → ${new Date(winEnd.getTime()-86400000).toLocaleDateString("nl-NL")}`,
-     margin,
-     68
-   );
+   const label = (t.title || "").slice(0, 65);
+   doc.text(label, chartX, y);
 
-   const chartX = margin;
-   const chartY = 90;
-   const chartW = pageW - margin*2;
-   const labelW = 190;
-   const barX = chartX + labelW;
-   const barW = chartW - labelW;
+   const sDay = Math.round((r.start - minD)/86400000);
+   const eDay = Math.round((r.end - minD)/86400000);
+   const sx = barX + (sDay/totalDays)*barW;
+   const ex = barX + (eDay/totalDays)*barW;
+   const w = Math.max(2, ex - sx);
 
-   doc.setDrawColor(220);
-   doc.setFont("helvetica","normal");
-   doc.setFontSize(6);
-   for (let d=0; d<=windowDays; d++){
-     const x = barX + (d/windowDays)*barW;
-     doc.line(x, chartY-10, x, pageH - margin);
-     if (d < windowDays){
-       const dt = new Date(winStart);
-       dt.setDate(dt.getDate() + d);
-       const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-       doc.text(txt, x+1, chartY-6, { angle: 90 });
+   const prio = String(t.priority||"Medium");
+   const fill = prio === "High" ? [176,0,32] : (prio === "Low" ? [11,122,59] : [179,107,0]);
+
+   doc.setFillColor(fill[0], fill[1], fill[2]);
+   doc.setDrawColor(200);
+   doc.rect(sx, y-8, w, 9, "F");
+
+   if (t.deadline){
+     const dl = dateFromYMD(t.deadline);
+     if (dl){
+       const dlDay = Math.round((dl - minD)/86400000);
+       const mx = barX + (dlDay/totalDays)*barW;
+       doc.setDrawColor(0);
+       doc.line(mx, y-10, mx, y+2);
      }
    }
 
-   return { chartX, chartY, barX, barW };
+   y += rowH;
  }
 
- for (let offset=0; offset<totalRangeDays; offset+=windowDays){
-   const winStart = new Date(minD);
-   winStart.setDate(winStart.getDate() + offset);
-   const winEnd = new Date(winStart);
-   winEnd.setDate(winEnd.getDate() + windowDays);
-
-   const windowItems = ganttItems.filter(it => it.r.end > winStart && it.r.start < winEnd);
-   if (!windowItems.length) continue;
-
-   if (pageIndex > 0) doc.addPage();
-   pageIndex++;
-   let frame = drawWindowFrame(winStart, winEnd, "");
-
-   let y = frame.chartY + 12;
-   const rowH = 14;
-   doc.setDrawColor(230);
-
-   for (const it of windowItems){
-     if (y > pageH - margin - 30){
-       doc.addPage();
-       frame = drawWindowFrame(winStart, winEnd, " (vervolg)");
-       y = frame.chartY + 12;
-     }
-
-     const t = it.t;
-     const r = it.r;
-
-     const s = r.start < winStart ? winStart : r.start;
-     const e = r.end > winEnd ? winEnd : r.end;
-     const sDay = Math.max(0, Math.round((s - winStart)/86400000));
-     const eDay = Math.max(0, Math.round((e - winStart)/86400000));
-
-     doc.setFont("helvetica","normal");
-     doc.setFontSize(8);
-     const label = (t.title || "").slice(0, 65);
-     doc.text(label, frame.chartX, y);
-
-     const sx = frame.barX + (sDay/windowDays)*frame.barW;
-     const ex = frame.barX + (eDay/windowDays)*frame.barW;
-     const w = Math.max(2, ex - sx);
-
-     const fill = hexToRgb(getProjectColor(t.project));
-
-     doc.setFillColor(fill[0], fill[1], fill[2]);
-     doc.setDrawColor(200);
-     doc.rect(sx, y-8, w, 9, "F");
-
-     if (t.deadline){
-       const dl = dateFromYMD(t.deadline);
-       if (dl && dl >= winStart && dl < winEnd){
-         const dlDay = Math.round((dl - winStart)/86400000);
-         const mx = frame.barX + (dlDay/windowDays)*frame.barW;
-         doc.setDrawColor(0);
-         doc.line(mx, y-10, mx, y+2);
-       }
-     }
-
-     y += rowH;
-   }
-
-   doc.setFont("helvetica","normal");
-   doc.setFontSize(9);
-   doc.text("Legenda: balkkleur = prioriteit (High/Medium/Low). Zwart streepje = deadline.", margin, pageH - margin);
- }
+ doc.setFont("helvetica","normal");
+ doc.setFontSize(9);
+ doc.text("Legenda: balkkleur = prioriteit (High/Medium/Low). Zwart streepje = deadline.", margin, pageH - margin);
 }
 </script>
 
