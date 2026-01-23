@@ -350,8 +350,10 @@
  .week-group-head { display:flex; align-items:center; gap:8px; margin:0 0 6px; }
  .week-group-body { display:flex; flex-direction:column; gap:10px; }
 
- .task-card { background:#fff; border:1px solid #e7e7e7; border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); }
- .task-card-top { padding:12px; background:#fff; }
+.task-card { background:#fff; border:1px solid #e7e7e7; border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); }
+.task-card.unplanned { background:#fff1f1; border-color:#f1caca; }
+.task-card.unplanned .task-card-top { background:#fff1f1; }
+.task-card-top { padding:12px; background:#fff; }
  .task-card-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
  .task-card-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
  .task-card-actions button { flex:1 1 140px; margin:0; }
