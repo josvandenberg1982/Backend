@@ -2446,6 +2446,11 @@ function importCSV(e){
 
 function resetAll(){
  if (!confirm("Weet je zeker dat je alles wilt wissen?")) return;
+ const code = prompt("Voer code 1234 in om door te gaan:");
+ if (code !== "1234"){
+   alert("Verkeerde code, reset geannuleerd.");
+   return;
+ }
  localStorage.removeItem(KEY);
  setState(defaultState());
  save();
