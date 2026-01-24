@@ -1104,7 +1104,8 @@ function observeDetails(){
          const id = el.dataset.taskid;
          if (id) openTaskIds.delete(id);
        }
-     }
+     
+     
    });
  }
  detailsObserver.disconnect();
@@ -2901,21 +2902,16 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFillColor(251,251,251);
    doc.rect(barX, chartTop, barW, chartH, "F");
 
-   const dayW = barW / windowDays;
-   doc.setFillColor(238,238,238);
+   doc.setFillColor(245,245,245);
    for (let d=0; d<windowDays; d++){
      const dt = new Date(winStart);
      dt.setDate(dt.getDate() + d);
      const day = dt.getDay();
      if (day === 0 || day === 6){
        const x = barX + (d/windowDays)*barW;
-       doc.rect(x, chartTop, dayW, chartH, "F");
-       doc.setDrawColor(200);
-       doc.setLineWidth(1);
-       doc.line(x + dayW/2, chartTop, x + dayW/2, chartBottom);
+       doc.rect(x, chartTop, barW/windowDays, chartH, "F");
      }
    }
-   doc.setLineWidth(0.2);
 
    doc.setDrawColor(210);
    doc.setFont("helvetica","normal");
