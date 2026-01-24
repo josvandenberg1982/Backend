@@ -430,6 +430,26 @@ nav {
    font-weight: 700;
  }
 
+ #projectList li,
+ #labelList li {
+   margin: 6px 0;
+ }
+ #projectList .row,
+ #labelList .row {
+   gap: 8px;
+ }
+ #projectList .pill,
+ #labelList .pill {
+   font-size: 11px;
+   padding: 2px 8px;
+ }
+ .color-compact {
+   width: 28px;
+   height: 28px;
+   padding: 0;
+   border-radius: 8px;
+ }
+
  /* ============================================================
     NAV TABS: standaard primary, actieve tab rood + streepje
     ============================================================ */
@@ -1981,7 +2001,7 @@ function renderSettings(){
      </span>
 
      <div class="row" style="margin-top:6px;">
-       <input type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
+       <input class="color-compact" type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
        <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
        <button class="btn" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
 
@@ -2017,7 +2037,7 @@ function renderSettings(){
        ${escapeHtml(l.name)}
      </span>
      <div class="row" style="margin-top:6px;">
-       <input type="color" value="${escapeAttr(l.color||"#7b7b7b")}" onchange="setLabelColor('${escapeAttr(l.name)}', this.value)">
+       <input class="color-compact" type="color" value="${escapeAttr(l.color||"#7b7b7b")}" onchange="setLabelColor('${escapeAttr(l.name)}', this.value)">
        <button class="btn" type="button" onclick="removeLabel('${escapeAttr(l.name)}')">Verwijderen</button>
      </div>
    `;
