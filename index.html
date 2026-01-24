@@ -2926,7 +2926,13 @@ function drawGantt(doc, projectName, tasks, margin){
    const winEnd = new Date(winStart);
    winEnd.setDate(winEnd.getDate() + windowDays);
 
-   const windowItems = ganttItems.filter(it => it.r.end > winStart && it.r.start < winEnd);
+   const windowItems = ganttItems
+     .filter(it => it.r.end > winStart && it.r.start < winEnd)
+     .sort((a, b) => {
+       const d = a.r.start.getTime() - b.r.start.getTime();
+       if (d !== 0) return d;
+       return String(a.t.title || "").localeCompare(String(b.t.title || ""));
+     });
    if (!windowItems.length) continue;
 
    const rowH = 14;
