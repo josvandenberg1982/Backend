@@ -160,7 +160,7 @@ nav {
    min-height: 54px;
  }
  .btn-primary:hover{
-   background: var(--primary-hover);
+   backgroundNS: var(--primary-hover);
    border-color: var(--primary-hover);
  }
  .btn-primary:active{
@@ -428,6 +428,89 @@ nav {
    border-color: var(--primary);
    color: #fff;
    font-weight: 700;
+ }
+
+ #projectList,
+ #labelList {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+ }
+#projectList li,
+#labelList li {
+  margin: 6px 0;
+  list-style: none;
+}
+ #projectList .row,
+ #labelList .row {
+   gap: 8px;
+ }
+ #projectList .pill,
+ #labelList .pill {
+   font-size: 11px;
+   padding: 2px 8px;
+ }
+.project-item {
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fafafa;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.project-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+}
+.project-title .project-name {
+  font-weight: 800;
+  font-size: 15px;
+}
+.project-divider {
+  height: 1px;
+  background: #e7e7e7;
+  margin: 4px 0;
+  width: 100%;
+}
+.project-controls .btn {
+  width: auto;
+}
+.project-controls {
+  justify-content: center;
+}
+.project-inner {
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  padding: 8px;
+  background: #fff;
+  width: 100%;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+ .project-actions {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   margin-top: 6px;
+   justify-content: center;
+ }
+ .project-actions .btn-inline {
+   margin: 0;
+ }
+ .color-compact {
+   width: 28px;
+   height: 28px;
+   padding: 0;
+   border-radius: 8px;
  }
 
  /* ============================================================
@@ -1971,21 +2054,23 @@ function renderSettings(){
 
  state.projects.forEach((p, idx) => {
    const li = document.createElement("li");
-   li.style.margin = "8px 0";
+   li.className = "project-item";
 
    li.innerHTML = `
-     <span class="pill" style="margin:0;">
-       <span class="dot" style="background:${escapeAttr(p.color||"#4a90e2")}"></span>
-       ${escapeHtml(p.name)}
-       ${idx===0 ? ` <span class="small muted">(default)</span>` : ``}
-     </span>
+     <div class="project-title">
+       <span class="project-name">${escapeHtml(p.name)}</span>
+       ${idx===0 ? `<span class="small muted">(default)</span>` : ``}
+     </div>
+     <div class="project-divider"></div>
 
-     <div class="row" style="margin-top:6px;">
-       <input type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
-       <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
-       <button class="btn" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
+     <div class="project-inner">
+       <div class="row project-controls">
+         <input class="color-compact" type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
+         <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
+         <button class="btn btn-small" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
+       </div>
 
-       <div style="flex: 3 1 260px;">
+       <div class="project-actions">
          <button class="btn-inline btn-inline-primary" type="button"
                  onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:true })">
            Genereer PDF + Gantt
@@ -1997,8 +2082,8 @@ function renderSettings(){
          </button>
 
          ${idx===0
-           ? `<span class="small muted" style="display:inline-block; margin-top:10px;">Default project kan niet verwijderd worden.</span>`
-           : `<button class="btn" type="button" style="width:auto; margin-top:6px;"
+           ? `<span class="small muted" style="display:inline-block; margin-top:6px;">Default project kan niet verwijderd worden.</span>`
+           : `<button class="btn" type="button" style="width:auto;"
                       onclick="removeProject('${escapeAttr(p.name)}')">Verwijderen</button>`}
        </div>
      </div>
@@ -2017,7 +2102,7 @@ function renderSettings(){
        ${escapeHtml(l.name)}
      </span>
      <div class="row" style="margin-top:6px;">
-       <input type="color" value="${escapeAttr(l.color||"#7b7b7b")}" onchange="setLabelColor('${escapeAttr(l.name)}', this.value)">
+       <input class="color-compact" type="color" value="${escapeAttr(l.color||"#7b7b7b")}" onchange="setLabelColor('${escapeAttr(l.name)}', this.value)">
        <button class="btn" type="button" onclick="removeLabel('${escapeAttr(l.name)}')">Verwijderen</button>
      </div>
    `;
