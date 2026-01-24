@@ -503,9 +503,13 @@ nav {
    margin-top: 6px;
    justify-content: center;
  }
- .project-actions .btn-inline {
+.project-actions .btn-inline {
    margin: 0;
  }
+.project-note {
+  margin-top: 6px;
+  text-align: center;
+}
  .color-compact {
    width: 28px;
    height: 28px;
@@ -2081,12 +2085,14 @@ function renderSettings(){
            Genereer PDF
          </button>
 
-         ${idx===0
-           ? `<span class="small muted" style="display:inline-block; margin-top:6px;">Default project kan niet verwijderd worden.</span>`
+        ${idx===0
+           ? `<button class="btn" type="button" style="width:auto;" disabled
+                     title="Default project kan niet verwijderd worden.">Verwijderen</button>`
            : `<button class="btn" type="button" style="width:auto;"
                       onclick="removeProject('${escapeAttr(p.name)}')">Verwijderen</button>`}
-       </div>
-     </div>
+      </div>
+      ${idx===0 ? `<div class="small muted project-note">Default project kan niet verwijderd worden.</div>` : ``}
+    </div>
    `;
    ul.appendChild(li);
  });
