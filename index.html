@@ -2899,14 +2899,23 @@ function drawGantt(doc, projectName, tasks, margin){
      doc.setFont("helvetica","normal");
      doc.setFontSize(6);
      doc.setTextColor(110);
-     const labelY = chartTop - 6;
-     for (let d=0; d<=windowDays; d++){
-       const x = barX + (d/windowDays)*barW;
-       doc.line(x, chartY-10, x, chartBottom);
-       if (d < windowDays){
-         const dt = new Date(winStart);
-         dt.setDate(dt.getDate() + d);
-         const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+    const labelY = chartTop - 6;
+    for (let d=0; d<=windowDays; d++){
+      const x = barX + (d/windowDays)*barW;
+      if (d < windowDays){
+        const dt = new Date(winStart);
+        dt.setDate(dt.getDate() + d);
+        const day = dt.getDay();
+        if (day === 0 || day === 6){
+          doc.setFillColor(255,230,230);
+          doc.rect(x, chartTop, barW/windowDays, chartH, "F");
+        }
+      }
+      doc.line(x, chartY-10, x, chartBottom);
+      if (d < windowDays){
+        const dt = new Date(winStart);
+        dt.setDate(dt.getDate() + d);
+        const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
          const midX = barX + ((d + 0.5)/windowDays)*barW;
          doc.text(txt, midX + 1, labelY, { angle: 90 });
        }
