@@ -69,6 +69,8 @@ nav {
 
  .row { display:flex; gap:10px; flex-wrap: wrap; align-items: center; }
  .row > * { flex: 1 1 180px; }
+ .settings-add-row { justify-content: center; }
+ .settings-add-row > * { flex: 1 1 200px; }
 
  .date-row > div { flex: 1 1 160px; }
 
@@ -510,12 +512,20 @@ nav {
   margin-top: 6px;
   text-align: center;
 }
- .color-compact {
+.color-compact {
    width: 28px;
    height: 28px;
    padding: 0;
    border-radius: 8px;
+   border: 1px solid #cfcfcf;
+   background: #fff;
+   -webkit-appearance: none;
+   appearance: none;
  }
+ input.color-compact::-webkit-color-swatch-wrapper { padding: 0; }
+ input.color-compact::-webkit-color-swatch { border: 0; border-radius: 6px; }
+ input.color-compact::-moz-color-swatch { border: 0; border-radius: 6px; }
+ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
 
  /* ============================================================
     NAV TABS: standaard primary, actieve tab rood + streepje
@@ -670,7 +680,7 @@ nav {
      <span class="small muted">Niet ingepland en nieuwste staan bovenaan.</span>
    </div>
    <div class="card-pad">
-     <div class="row">
+     <div class="row settings-add-row">
        <div>
          <label>Zoeken</label>
          <input id="q" placeholder="Zoek in titel/tags/opmerkingen" oninput="renderTasks()">
@@ -758,9 +768,9 @@ nav {
  <div class="card">
    <div class="card-head"><strong>Projecten</strong></div>
    <div class="card-pad">
-     <div class="row">
+     <div class="row settings-add-row">
        <input id="newProject" placeholder="Nieuw project (naam)">
-       <input id="newProjectColor" type="color" value="#4a90e2" title="Kleur">
+      <input id="newProjectColor" class="color-compact" type="color" value="#4a90e2" title="Kleur">
        <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
      </div>
      <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
@@ -775,7 +785,7 @@ nav {
    <div class="card-pad">
      <div class="row">
        <input id="newLabel" placeholder="Nieuw label (naam)">
-       <input id="newLabelColor" type="color" value="#7b7b7b" title="Kleur">
+      <input id="newLabelColor" class="color-compact" type="color" value="#7b7b7b" title="Kleur">
        <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
      </div>
      <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
