@@ -2836,9 +2836,10 @@ function drawGantt(doc, projectName, tasks, margin){
  const pageW = doc.internal.pageSize.getWidth();
  const pageH = doc.internal.pageSize.getHeight();
 
- const ganttItems = tasks
-   .map(t => ({ t, r: taskGanttRange(t) }))
-   .filter(x => x.r);
+  const ganttItems = tasks
+    .map(t => ({ t, r: taskGanttRange(t) }))
+    .filter(x => x.r)
+    .sort((a, b) => a.r.start.getTime() - b.r.start.getTime());
 
  if (!ganttItems.length){
    doc.setFont("helvetica","normal");
@@ -2890,24 +2891,24 @@ function drawGantt(doc, projectName, tasks, margin){
 
    doc.setFillColor(255,255,255);
    doc.rect(chartX, chartTop, labelW, chartH, "F");
-   doc.setFillColor(251,251,251);
-   doc.rect(barX, chartTop, barW, chartH, "F");
 
-   doc.setDrawColor(210);
-   doc.setFont("helvetica","normal");
-   doc.setFontSize(6);
-   doc.setTextColor(110);
-   for (let d=0; d<=windowDays; d++){
-     const x = barX + (d/windowDays)*barW;
-     doc.line(x, chartY-10, x, chartBottom);
-     if (d < windowDays){
-       const dt = new Date(winStart);
-       dt.setDate(dt.getDate() + d);
-       const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-       doc.text(txt, x+1, chartY-6, { angle: 90 });
+     doc.setDrawColor(210);
+     doc.setFont("helvetica","normal");
+     doc.setFontSize(6);
+     doc.setTextColor(110);
+     const labelY = chartTop - 6;
+     for (let d=0; d<=windowDays; d++){
+       const x = barX + (d/windowDays)*barW;
+       doc.line(x, chartY-10, x, chartBottom);
+       if (d < windowDays){
+         const dt = new Date(winStart);
+         dt.setDate(dt.getDate() + d);
+         const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+         const midX = barX + ((d + 0.5)/windowDays)*barW;
+         doc.text(txt, midX + 1, labelY, { angle: 90 });
+       }
      }
-   }
-   doc.setTextColor(0);
+     doc.setTextColor(0);
 
    return { chartX, chartY, barX, barW };
  }
