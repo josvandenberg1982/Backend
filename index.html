@@ -469,6 +469,12 @@ nav {
  .project-controls .btn {
    width: auto;
  }
+ .project-inner {
+   border: 1px solid #ececec;
+   border-radius: 10px;
+   padding: 8px;
+   background: #fff;
+ }
  .project-actions {
    display: flex;
    flex-wrap: wrap;
@@ -2036,27 +2042,29 @@ function renderSettings(){
      </div>
      <div class="project-divider"></div>
 
-     <div class="row project-controls" style="margin-top:6px;">
-       <input class="color-compact" type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
-       <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
-       <button class="btn btn-small" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
-     </div>
+     <div class="project-inner">
+       <div class="row project-controls">
+         <input class="color-compact" type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
+         <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
+         <button class="btn btn-small" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
+       </div>
 
-     <div class="project-actions">
-       <button class="btn-inline btn-inline-primary" type="button"
-               onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:true })">
-         Genereer PDF + Gantt
-       </button>
+       <div class="project-actions">
+         <button class="btn-inline btn-inline-primary" type="button"
+                 onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:true })">
+           Genereer PDF + Gantt
+         </button>
 
-       <button class="btn-inline" type="button"
-               onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:false })">
-         Genereer PDF
-       </button>
+         <button class="btn-inline" type="button"
+                 onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:false })">
+           Genereer PDF
+         </button>
 
-       ${idx===0
-         ? `<span class="small muted" style="display:inline-block; margin-top:6px;">Default project kan niet verwijderd worden.</span>`
-         : `<button class="btn" type="button" style="width:auto;"
-                    onclick="removeProject('${escapeAttr(p.name)}')">Verwijderen</button>`}
+         ${idx===0
+           ? `<span class="small muted" style="display:inline-block; margin-top:6px;">Default project kan niet verwijderd worden.</span>`
+           : `<button class="btn" type="button" style="width:auto;"
+                      onclick="removeProject('${escapeAttr(p.name)}')">Verwijderen</button>`}
+       </div>
      </div>
    `;
    ul.appendChild(li);
