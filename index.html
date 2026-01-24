@@ -160,7 +160,7 @@ nav {
    min-height: 54px;
  }
  .btn-primary:hover{
-   background: var(--primary-hover);
+   backgroundNS: var(--primary-hover);
    border-color: var(--primary-hover);
  }
  .btn-primary:active{
@@ -442,6 +442,34 @@ nav {
  #labelList .pill {
    font-size: 11px;
    padding: 2px 8px;
+ }
+ .project-item {
+   border: 1px solid #e5e5e5;
+   border-radius: 12px;
+   padding: 10px;
+   background: #fff;
+ }
+ .project-title {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   font-weight: 700;
+   font-size: 14px;
+ }
+ .project-title .project-name {
+   font-weight: 800;
+ }
+ .project-controls .btn {
+   width: auto;
+ }
+ .project-actions {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   margin-top: 6px;
+ }
+ .project-actions .btn-inline {
+   margin: 0;
  }
  .color-compact {
    width: 28px;
