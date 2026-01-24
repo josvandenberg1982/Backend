@@ -2901,6 +2901,17 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFillColor(251,251,251);
    doc.rect(barX, chartTop, barW, chartH, "F");
 
+   doc.setFillColor(245,245,245);
+   for (let d=0; d<windowDays; d++){
+     const dt = new Date(winStart);
+     dt.setDate(dt.getDate() + d);
+     const day = dt.getDay();
+     if (day === 0 || day === 6){
+       const x = barX + (d/windowDays)*barW;
+       doc.rect(x, chartTop, barW/windowDays, chartH, "F");
+     }
+   }
+
    doc.setDrawColor(210);
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
