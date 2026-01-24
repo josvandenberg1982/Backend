@@ -506,12 +506,21 @@ nav {
  .project-actions .btn-inline {
    margin: 0;
  }
- .color-compact {
-   width: 28px;
-   height: 28px;
-   padding: 0;
-   border-radius: 8px;
- }
+.color-compact {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input.color-compact::-webkit-color-swatch-wrapper { padding: 0; }
+input.color-compact::-webkit-color-swatch { border: 0; border-radius: 8px; }
+input.color-compact::-moz-color-swatch { border: 0; border-radius: 8px; }
+input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
 
  /* ============================================================
     NAV TABS: standaard primary, actieve tab rood + streepje
@@ -752,36 +761,6 @@ nav {
  <div style="height:12px;"></div>
 
  <div class="card">
-   <div class="card-head"><strong>Projecten</strong></div>
-   <div class="card-pad">
-     <div class="row">
-       <input id="newProject" placeholder="Nieuw project (naam)">
-       <input id="newProjectColor" type="color" value="#4a90e2" title="Kleur">
-       <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
-     </div>
-     <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
-     <ul id="projectList"></ul>
-   </div>
- </div>
-
- <div style="height:12px;"></div>
-
- <div class="card">
-   <div class="card-head"><strong>Labels</strong></div>
-   <div class="card-pad">
-     <div class="row">
-       <input id="newLabel" placeholder="Nieuw label (naam)">
-       <input id="newLabelColor" type="color" value="#7b7b7b" title="Kleur">
-       <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
-     </div>
-     <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
-     <ul id="labelList"></ul>
-   </div>
- </div>
-
- <div style="height:12px;"></div>
-
- <div class="card">
    <div class="card-head"><strong>Notificatie (later met backend)</strong></div>
    <div class="card-pad">
      <div class="small muted">
@@ -828,6 +807,36 @@ nav {
    <div class="card-pad">
      <button class="btn danger" type="button" onclick="resetAll()">Alles wissen (reset)</button>
      <div class="small muted">Let op: dit verwijdert alle taken en settings in je browser.</div>
+   </div>
+ </div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
+   <div class="card-head"><strong>Projecten</strong></div>
+   <div class="card-pad">
+     <div class="row">
+       <input id="newProject" placeholder="Nieuw project (naam)">
+       <input id="newProjectColor" class="color-compact" type="color" value="#4a90e2" title="Kleur">
+       <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
+     </div>
+     <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
+     <ul id="projectList"></ul>
+   </div>
+ </div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
+   <div class="card-head"><strong>Labels</strong></div>
+   <div class="card-pad">
+     <div class="row">
+       <input id="newLabel" placeholder="Nieuw label (naam)">
+       <input id="newLabelColor" class="color-compact" type="color" value="#7b7b7b" title="Kleur">
+       <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
+     </div>
+     <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
+     <ul id="labelList"></ul>
    </div>
  </div>
 </section>
