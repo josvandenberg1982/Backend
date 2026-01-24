@@ -2905,6 +2905,7 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
+   const labelY = chartTop - 6;
    for (let d=0; d<=windowDays; d++){
      const x = barX + (d/windowDays)*barW;
      doc.line(x, chartY-10, x, chartBottom);
@@ -2912,7 +2913,8 @@ function drawGantt(doc, projectName, tasks, margin){
        const dt = new Date(winStart);
        dt.setDate(dt.getDate() + d);
        const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-       doc.text(txt, x+1, chartY-6, { angle: 90 });
+       const midX = barX + ((d + 0.5)/windowDays)*barW;
+       doc.text(txt, midX + 1, labelY, { angle: 90 });
      }
    }
    doc.setTextColor(0);
