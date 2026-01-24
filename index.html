@@ -444,20 +444,27 @@ nav {
    padding: 2px 8px;
  }
  .project-item {
-   border: 1px solid #e5e5e5;
+   border: 1px solid #dcdcdc;
    border-radius: 12px;
-   padding: 10px;
-   background: #fff;
+   padding: 12px;
+   background: #fafafa;
+   box-shadow: 0 1px 0 rgba(0,0,0,.03);
  }
  .project-title {
    display: flex;
    align-items: center;
    gap: 8px;
    font-weight: 700;
-   font-size: 14px;
+   font-size: 15px;
  }
  .project-title .project-name {
    font-weight: 800;
+   font-size: 15px;
+ }
+ .project-divider {
+   height: 1px;
+   background: #e7e7e7;
+   margin: 8px 0;
  }
  .project-controls .btn {
    width: auto;
@@ -2019,36 +2026,37 @@ function renderSettings(){
 
  state.projects.forEach((p, idx) => {
    const li = document.createElement("li");
-   li.style.margin = "8px 0";
+   li.className = "project-item";
 
    li.innerHTML = `
-     <span class="pill" style="margin:0;">
+     <div class="project-title">
        <span class="dot" style="background:${escapeAttr(p.color||"#4a90e2")}"></span>
-       ${escapeHtml(p.name)}
-       ${idx===0 ? ` <span class="small muted">(default)</span>` : ``}
-     </span>
+       <span class="project-name">${escapeHtml(p.name)}</span>
+       ${idx===0 ? `<span class="small muted">(default)</span>` : ``}
+     </div>
+     <div class="project-divider"></div>
 
-     <div class="row" style="margin-top:6px;">
+     <div class="row project-controls" style="margin-top:6px;">
        <input class="color-compact" type="color" value="${escapeAttr(p.color||"#4a90e2")}" onchange="setProjectColor('${escapeAttr(p.name)}', this.value)">
        <input type="text" value="${escapeAttr(p.name)}" placeholder="Projectnaam">
-       <button class="btn" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
+       <button class="btn btn-small" type="button" onclick="renameProject('${escapeAttr(p.name)}', this.previousElementSibling.value)">Naam wijzigen</button>
+     </div>
 
-       <div style="flex: 3 1 260px;">
-         <button class="btn-inline btn-inline-primary" type="button"
-                 onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:true })">
-           Genereer PDF + Gantt
-         </button>
+     <div class="project-actions">
+       <button class="btn-inline btn-inline-primary" type="button"
+               onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:true })">
+         Genereer PDF + Gantt
+       </button>
 
-         <button class="btn-inline" type="button"
-                 onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:false })">
-           Genereer PDF
-         </button>
+       <button class="btn-inline" type="button"
+               onclick="generateProjectPDF('${escapeAttr(p.name)}', { includeGantt:false })">
+         Genereer PDF
+       </button>
 
-         ${idx===0
-           ? `<span class="small muted" style="display:inline-block; margin-top:10px;">Default project kan niet verwijderd worden.</span>`
-           : `<button class="btn" type="button" style="width:auto; margin-top:6px;"
-                      onclick="removeProject('${escapeAttr(p.name)}')">Verwijderen</button>`}
-       </div>
+       ${idx===0
+         ? `<span class="small muted" style="display:inline-block; margin-top:6px;">Default project kan niet verwijderd worden.</span>`
+         : `<button class="btn" type="button" style="width:auto;"
+                    onclick="removeProject('${escapeAttr(p.name)}')">Verwijderen</button>`}
      </div>
    `;
    ul.appendChild(li);
