@@ -506,12 +506,20 @@ nav {
  .project-actions .btn-inline {
    margin: 0;
  }
- .color-compact {
-   width: 28px;
-   height: 28px;
-   padding: 0;
-   border-radius: 8px;
- }
+.color-compact {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 0 0 auto;
+  min-width: 28px;
+  max-width: 28px;
+}
 
  /* ============================================================
     NAV TABS: standaard primary, actieve tab rood + streepje
@@ -2829,7 +2837,12 @@ function drawGantt(doc, projectName, tasks, margin){
 
  const ganttItems = tasks
    .map(t => ({ t, r: taskGanttRange(t) }))
-   .filter(x => x.r);
+   .filter(x => x.r)
+   .sort((a, b) => {
+     const diff = a.r.start.getTime() - b.r.start.getTime();
+     if (diff !== 0) return diff;
+     return (a.t.created || 0) - (b.t.created || 0);
+   });
 
  if (!ganttItems.length){
    doc.setFont("helvetica","normal");
@@ -2888,14 +2901,31 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
+   const labelY = chartTop - 6;
+   const today = new Date();
+   today.setHours(0,0,0,0);
+   const dayWidth = barW / windowDays;
    for (let d=0; d<=windowDays; d++){
      const x = barX + (d/windowDays)*barW;
-     doc.line(x, chartY-10, x, chartBottom);
+     doc.line(x, chartY, x, chartBottom);
      if (d < windowDays){
        const dt = new Date(winStart);
        dt.setDate(dt.getDate() + d);
        const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-       doc.text(txt, x+1, chartY-6, { angle: 90 });
+       const midX = x + dayWidth / 2;
+       doc.text(txt, midX + 1, labelY, { angle: 90 });
+       if (dt.getDay() === 0 || dt.getDay() === 6){
+         doc.setDrawColor(220,100,100);
+         doc.setLineWidth(0.6);
+         doc.line(midX, chartY, midX, chartBottom);
+       }
+       if (dt.getTime() === today.getTime()){
+         doc.setDrawColor(176,0,32);
+         doc.setLineWidth(1.1);
+         doc.line(midX, chartY, midX, chartBottom);
+       }
+       doc.setLineWidth(0.35);
+       doc.setDrawColor(210);
      }
    }
    doc.setTextColor(0);
