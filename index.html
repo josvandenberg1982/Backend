@@ -516,6 +516,9 @@ nav {
   box-sizing: border-box;
   -webkit-appearance: none;
   appearance: none;
+  flex: 0 0 32px;
+  min-width: 32px;
+  max-width: 32px;
 }
 input.color-compact::-webkit-color-swatch-wrapper { padding: 0; }
 input.color-compact::-webkit-color-swatch { border: 0; border-radius: 8px; }
@@ -613,15 +616,6 @@ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
     </div>
   </div>
 
-  <div style="height:12px;"></div>
-
-  <div class="card">
-    <div class="card-head"><strong>Reset</strong></div>
-    <div class="card-pad">
-      <button class="btn danger" type="button" onclick="resetAll()">Alles wissen (reset)</button>
-      <div class="small muted">Let op: dit verwijdert alle taken en settings in je browser.</div>
-    </div>
-  </div>
 </section>
 
 <section id="create" hidden>
@@ -768,9 +762,9 @@ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
    </div>
  </div>
 
- <div style="height:12px;"></div>
+  <div style="height:12px;"></div>
 
- <div class="card">
+  <div class="card">
    <div class="card-head"><strong>Notificatie (later met backend)</strong></div>
    <div class="card-pad">
      <div class="small muted">
@@ -835,6 +829,16 @@ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
      </div>
      <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
      <ul id="labelList"></ul>
+  </div>
+</div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
+   <div class="card-head"><strong>Reset</strong></div>
+   <div class="card-pad">
+     <button class="btn danger" type="button" onclick="resetAll()">Alles wissen (reset)</button>
+     <div class="small muted">Let op: dit verwijdert alle taken en settings in je browser.</div>
    </div>
  </div>
 </section>
@@ -2894,33 +2898,54 @@ function drawGantt(doc, projectName, tasks, margin){
 
    doc.setFillColor(255,255,255);
    doc.rect(chartX, chartTop, labelW, chartH, "F");
+   doc.setFillColor(251,251,251);
+   doc.rect(barX, chartTop, barW, chartH, "F");
 
-     doc.setDrawColor(210);
-     doc.setFont("helvetica","normal");
-     doc.setFontSize(6);
-     doc.setTextColor(110);
-    const labelY = chartTop - 6;
-    for (let d=0; d<=windowDays; d++){
-      const x = barX + (d/windowDays)*barW;
-      if (d < windowDays){
-        const dt = new Date(winStart);
-        dt.setDate(dt.getDate() + d);
-        const day = dt.getDay();
-        if (day === 0 || day === 6){
-          doc.setFillColor(255,230,230);
-          doc.rect(x, chartTop, barW/windowDays, chartH, "F");
-        }
-      }
-      doc.line(x, chartY-10, x, chartBottom);
-      if (d < windowDays){
-        const dt = new Date(winStart);
-        dt.setDate(dt.getDate() + d);
-        const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-         const midX = barX + ((d + 0.5)/windowDays)*barW;
-         doc.text(txt, midX + 1, labelY, { angle: 90 });
+   doc.setDrawColor(210);
+   doc.setFont("helvetica","normal");
+   doc.setFontSize(6);
+   doc.setTextColor(110);
+   const labelY = chartBottom + 12;
+   const today = new Date();
+   today.setHours(0,0,0,0);
+   const dayWidth = barW / windowDays;
+   for (let d=0; d<=windowDays; d++){
+     const x = barX + (d/windowDays)*barW;
+     if (d < windowDays){
+       const dt = new Date(winStart);
+       dt.setDate(dt.getDate() + d);
+       const day = dt.getDay();
+       if (day === 0 || day === 6){
+         doc.setFillColor(255,230,230);
+         doc.rect(x, chartY, dayWidth, chartBottom - chartY, "F");
+         doc.setFillColor(255,255,255);
        }
      }
-     doc.setTextColor(0);
+     doc.setLineWidth(0.35);
+     doc.setDrawColor(210);
+     doc.line(x, chartY, x, chartBottom);
+     if (d < windowDays){
+       const dt = new Date(winStart);
+       dt.setDate(dt.getDate() + d);
+       const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+       const midX = barX + ((d + 0.5)/windowDays)*barW;
+       doc.text(txt, midX + 1, labelY, { angle: 90 });
+       if (dt.getTime() === today.getTime()){
+         doc.setDrawColor(176,0,32);
+         doc.setLineWidth(1.1);
+         const centerX = x + dayWidth / 2;
+         doc.line(centerX, chartY, centerX, chartBottom);
+       } else if (dt.getDay() === 0 || dt.getDay() === 6){
+         doc.setDrawColor(210,90,90);
+         doc.setLineWidth(0.65);
+         const centerX = x + dayWidth / 2;
+         doc.line(centerX, chartY, centerX, chartBottom);
+       }
+       doc.setLineWidth(0.35);
+       doc.setDrawColor(210);
+     }
+   }
+   doc.setTextColor(0);
 
    return { chartX, chartY, barX, barW };
  }
