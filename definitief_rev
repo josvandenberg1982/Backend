@@ -2838,11 +2838,14 @@ function drawGantt(doc, projectName, tasks, margin){
  const ganttItems = tasks
    .map(t => ({ t, r: taskGanttRange(t) }))
    .filter(x => x.r)
-   .sort((a, b) => {
-     const diff = a.r.start.getTime() - b.r.start.getTime();
-     if (diff !== 0) return diff;
-     return (a.t.created || 0) - (b.t.created || 0);
-   });
+    .sort((a, b) => {
+      const diff = a.r.start.getTime() - b.r.start.getTime();
+      if (diff !== 0) return diff;
+      const projA = String(a.t.project || "").toLowerCase();
+      const projB = String(b.t.project || "").toLowerCase();
+      if (projA !== projB) return projA.localeCompare(projB);
+      return (a.t.created || 0) - (b.t.created || 0);
+    });
 
  if (!ganttItems.length){
    doc.setFont("helvetica","normal");
@@ -2895,38 +2898,40 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFillColor(255,255,255);
    doc.rect(chartX, chartTop, labelW, chartH, "F");
 
-   doc.setDrawColor(210);
+   doc.setDrawColor(190);
+   doc.setLineWidth(0.6);
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
-   const labelY = chartTop - 6;
+   const labelY = chartTop - 4;
    const dayWidth = barW / windowDays;
+   const dayHeight = chartBottom - chartY;
+   const today = new Date();
+   today.setHours(0,0,0,0);
    for (let d=0; d<=windowDays; d++){
-    const x = barX + (d/windowDays)*barW;
-    if (d < windowDays){
-      const dt = new Date(winStart);
-      dt.setDate(dt.getDate() + d);
-      if (dt.getDay() === 0 || dt.getDay() === 6){
-        doc.setFillColor(255,242,242);
-        doc.rect(x, chartY, dayWidth, chartBottom - chartY, "F");
-      }
-    }
-   doc.setDrawColor(170);
-   doc.line(x, chartY, x, chartBottom);
-   if (d < windowDays){
-     const dt = new Date(winStart);
-     dt.setDate(dt.getDate() + d);
-     const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-     const midX = x + dayWidth / 2;
-      if (dt.getTime() === today.getTime()){
-        doc.setTextColor(176,0,32);
-      } else {
-        doc.setTextColor(110);
-      }
-      doc.text(txt, midX + 1, labelY, { angle: 90 });
-      doc.setTextColor(110);
-    }
-  }
+     const x = barX + (d/windowDays)*barW;
+     if (d < windowDays){
+       const dt = new Date(winStart);
+       dt.setDate(dt.getDate() + d);
+       if (dt.getDay() === 0 || dt.getDay() === 6){
+         doc.setFillColor(255,242,242);
+         doc.rect(x, chartY, dayWidth, dayHeight, "F");
+       }
+       const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+       const midX = x + dayWidth / 2;
+       const todayIsDay = dt.getTime() === today.getTime();
+       if (todayIsDay){
+         doc.setTextColor(176,0,32);
+       } else {
+         doc.setTextColor(110);
+       }
+       doc.text(txt, midX + 1, labelY, { angle: 90 });
+       doc.setTextColor(110);
+     }
+     doc.setDrawColor(185);
+     doc.line(x, chartY, x, chartBottom);
+   }
+   doc.setLineWidth(0.35);
    doc.setTextColor(0);
 
    return { chartX, chartY, barX, barW };
@@ -2938,13 +2943,19 @@ function drawGantt(doc, projectName, tasks, margin){
    const winEnd = new Date(winStart);
    winEnd.setDate(winEnd.getDate() + windowDays);
 
-   const windowItems = ganttItems
-     .filter(it => it.r.end > winStart && it.r.start < winEnd)
-     .sort((a, b) => {
-       const diff = a.r.start.getTime() - b.r.start.getTime();
-       if (diff !== 0) return diff;
-       return (a.t.created || 0) - (b.t.created || 0);
-     });
+  const projectOrder = state.projects.map(p => p.name);
+  const windowItems = ganttItems
+    .filter(it => it.r.end > winStart && it.r.start < winEnd)
+    .sort((a, b) => {
+      const dayA = Math.floor(a.r.start.getTime() / 86400000);
+      const dayB = Math.floor(b.r.start.getTime() / 86400000);
+      const dayDiff = dayA - dayB;
+      if (dayDiff !== 0) return dayDiff;
+      const idxA = projectOrder.indexOf(a.t.project);
+      const idxB = projectOrder.indexOf(b.t.project);
+      if (idxA !== idxB) return idxA - idxB;
+      return (a.t.created || 0) - (b.t.created || 0);
+    });
    if (!windowItems.length) continue;
 
    const rowH = 14;
