@@ -2905,22 +2905,12 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
-   const labelY = chartBottom + 12;
+   const labelY = chartTop - 6;
    const today = new Date();
    today.setHours(0,0,0,0);
    const dayWidth = barW / windowDays;
    for (let d=0; d<=windowDays; d++){
      const x = barX + (d/windowDays)*barW;
-     if (d < windowDays){
-       const dt = new Date(winStart);
-       dt.setDate(dt.getDate() + d);
-       const day = dt.getDay();
-       if (day === 0 || day === 6){
-         doc.setFillColor(255,230,230);
-         doc.rect(x, chartY, dayWidth, chartBottom - chartY, "F");
-         doc.setFillColor(255,255,255);
-       }
-     }
      doc.setLineWidth(0.35);
      doc.setDrawColor(210);
      doc.line(x, chartY, x, chartBottom);
@@ -2935,14 +2925,9 @@ function drawGantt(doc, projectName, tasks, margin){
          doc.setLineWidth(1.1);
          const centerX = x + dayWidth / 2;
          doc.line(centerX, chartY, centerX, chartBottom);
-       } else if (dt.getDay() === 0 || dt.getDay() === 6){
-         doc.setDrawColor(210,90,90);
-         doc.setLineWidth(0.65);
-         const centerX = x + dayWidth / 2;
-         doc.line(centerX, chartY, centerX, chartBottom);
+         doc.setLineWidth(0.35);
+         doc.setDrawColor(210);
        }
-       doc.setLineWidth(0.35);
-       doc.setDrawColor(210);
      }
    }
    doc.setTextColor(0);
