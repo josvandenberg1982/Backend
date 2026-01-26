@@ -506,24 +506,12 @@ nav {
  .project-actions .btn-inline {
    margin: 0;
  }
-.color-compact {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 10px;
-  border: 1px solid #cfcfcf;
-  background: #fff;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  appearance: none;
-  flex: 0 0 32px;
-  min-width: 32px;
-  max-width: 32px;
-}
-input.color-compact::-webkit-color-swatch-wrapper { padding: 0; }
-input.color-compact::-webkit-color-swatch { border: 0; border-radius: 8px; }
-input.color-compact::-moz-color-swatch { border: 0; border-radius: 8px; }
-input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
+ .color-compact {
+   width: 28px;
+   height: 28px;
+   padding: 0;
+   border-radius: 8px;
+ }
 
  /* ============================================================
     NAV TABS: standaard primary, actieve tab rood + streepje
@@ -613,9 +601,8 @@ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
        Tip: Als je later via GitHub Pages opent, moet je in Firebase bij Authentication → Authorized domains ook
        jouw <code>&lt;username&gt;.github.io</code> toevoegen.
      </div>
-    </div>
-  </div>
-
+   </div>
+ </div>
 </section>
 
 <section id="create" hidden>
@@ -762,9 +749,39 @@ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
    </div>
  </div>
 
-  <div style="height:12px;"></div>
+ <div style="height:12px;"></div>
 
-  <div class="card">
+ <div class="card">
+   <div class="card-head"><strong>Projecten</strong></div>
+   <div class="card-pad">
+     <div class="row">
+       <input id="newProject" placeholder="Nieuw project (naam)">
+       <input id="newProjectColor" type="color" value="#4a90e2" title="Kleur">
+       <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
+     </div>
+     <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
+     <ul id="projectList"></ul>
+   </div>
+ </div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
+   <div class="card-head"><strong>Labels</strong></div>
+   <div class="card-pad">
+     <div class="row">
+       <input id="newLabel" placeholder="Nieuw label (naam)">
+       <input id="newLabelColor" type="color" value="#7b7b7b" title="Kleur">
+       <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
+     </div>
+     <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
+     <ul id="labelList"></ul>
+   </div>
+ </div>
+
+ <div style="height:12px;"></div>
+
+ <div class="card">
    <div class="card-head"><strong>Notificatie (later met backend)</strong></div>
    <div class="card-pad">
      <div class="small muted">
@@ -803,34 +820,6 @@ input.color-compact::-moz-focus-inner { border: 0; padding: 0; }
      </div>
    </div>
  </div>
-
- <div class="card">
-   <div class="card-head"><strong>Projecten</strong></div>
-   <div class="card-pad">
-     <div class="row">
-       <input id="newProject" placeholder="Nieuw project (naam)">
-       <input id="newProjectColor" class="color-compact" type="color" value="#4a90e2" title="Kleur">
-       <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
-     </div>
-     <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
-     <ul id="projectList"></ul>
-   </div>
- </div>
-
- <div style="height:12px;"></div>
-
- <div class="card">
-   <div class="card-head"><strong>Labels</strong></div>
-   <div class="card-pad">
-     <div class="row">
-       <input id="newLabel" placeholder="Nieuw label (naam)">
-       <input id="newLabelColor" class="color-compact" type="color" value="#7b7b7b" title="Kleur">
-       <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
-     </div>
-     <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
-     <ul id="labelList"></ul>
-  </div>
-</div>
 
  <div style="height:12px;"></div>
 
@@ -2448,11 +2437,6 @@ function importCSV(e){
 
 function resetAll(){
  if (!confirm("Weet je zeker dat je alles wilt wissen?")) return;
- const code = prompt("Voer code 1234 in om door te gaan:");
- if (code !== "1234"){
-   alert("Verkeerde code, reset geannuleerd.");
-   return;
- }
  localStorage.removeItem(KEY);
  setState(defaultState());
  save();
@@ -2843,10 +2827,9 @@ function drawGantt(doc, projectName, tasks, margin){
  const pageW = doc.internal.pageSize.getWidth();
  const pageH = doc.internal.pageSize.getHeight();
 
-  const ganttItems = tasks
-    .map(t => ({ t, r: taskGanttRange(t) }))
-    .filter(x => x.r)
-    .sort((a, b) => a.r.start.getTime() - b.r.start.getTime());
+ const ganttItems = tasks
+   .map(t => ({ t, r: taskGanttRange(t) }))
+   .filter(x => x.r);
 
  if (!ganttItems.length){
    doc.setFont("helvetica","normal");
@@ -2905,29 +2888,14 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
-   const labelY = chartTop - 6;
-   const today = new Date();
-   today.setHours(0,0,0,0);
-   const dayWidth = barW / windowDays;
    for (let d=0; d<=windowDays; d++){
      const x = barX + (d/windowDays)*barW;
-     doc.setLineWidth(0.35);
-     doc.setDrawColor(210);
-     doc.line(x, chartY, x, chartBottom);
+     doc.line(x, chartY-10, x, chartBottom);
      if (d < windowDays){
        const dt = new Date(winStart);
        dt.setDate(dt.getDate() + d);
        const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-       const midX = barX + ((d + 0.5)/windowDays)*barW;
-       doc.text(txt, midX + 1, labelY, { angle: 90 });
-       if (dt.getTime() === today.getTime()){
-         doc.setDrawColor(176,0,32);
-         doc.setLineWidth(1.1);
-         const centerX = x + dayWidth / 2;
-         doc.line(centerX, chartY, centerX, chartBottom);
-         doc.setLineWidth(0.35);
-         doc.setDrawColor(210);
-       }
+       doc.text(txt, x+1, chartY-6, { angle: 90 });
      }
    }
    doc.setTextColor(0);
