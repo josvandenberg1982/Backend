@@ -2904,6 +2904,8 @@ function drawGantt(doc, projectName, tasks, margin){
    doc.setTextColor(110);
    const labelY = chartTop - 6;
    const dayWidth = barW / windowDays;
+   const today = new Date();
+   today.setHours(0,0,0,0);
    for (let d=0; d<=windowDays; d++){
     const x = barX + (d/windowDays)*barW;
     if (d < windowDays){
@@ -2941,13 +2943,19 @@ function drawGantt(doc, projectName, tasks, margin){
    const winEnd = new Date(winStart);
    winEnd.setDate(winEnd.getDate() + windowDays);
 
-   const windowItems = ganttItems
-     .filter(it => it.r.end > winStart && it.r.start < winEnd)
-     .sort((a, b) => {
-       const diff = a.r.start.getTime() - b.r.start.getTime();
-       if (diff !== 0) return diff;
-       return (a.t.created || 0) - (b.t.created || 0);
-     });
+  const projectOrder = state.projects.map(p => p.name);
+  const windowItems = ganttItems
+    .filter(it => it.r.end > winStart && it.r.start < winEnd)
+    .sort((a, b) => {
+      const dayA = Math.floor(a.r.start.getTime() / 86400000);
+      const dayB = Math.floor(b.r.start.getTime() / 86400000);
+      const dayDiff = dayA - dayB;
+      if (dayDiff !== 0) return dayDiff;
+      const idxA = projectOrder.indexOf(a.t.project);
+      const idxB = projectOrder.indexOf(b.t.project);
+      if (idxA !== idxB) return idxA - idxB;
+      return (a.t.created || 0) - (b.t.created || 0);
+    });
    if (!windowItems.length) continue;
 
    const rowH = 14;
