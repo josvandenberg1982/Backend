@@ -764,7 +764,7 @@ nav {
    <div class="card-pad">
      <div class="row">
        <input id="newProject" placeholder="Nieuw project (naam)">
-       <input id="newProjectColor" type="color" value="#4a90e2" title="Kleur">
+       <input id="newProjectColor" class="color-compact" type="color" value="#4a90e2" title="Kleur">
        <button class="btn btn-primary" type="button" onclick="addProject()">Project toevoegen</button>
      </div>
      <div class="small muted">Projecten hebben een kleur (pills in taken/week).</div>
@@ -779,7 +779,7 @@ nav {
    <div class="card-pad">
      <div class="row">
        <input id="newLabel" placeholder="Nieuw label (naam)">
-       <input id="newLabelColor" type="color" value="#7b7b7b" title="Kleur">
+       <input id="newLabelColor" class="color-compact" type="color" value="#7b7b7b" title="Kleur">
        <button class="btn btn-primary" type="button" onclick="addLabel()">Label toevoegen</button>
      </div>
      <div class="small muted">Labels komen uit het Tags-veld (komma-gescheiden). Geef ze hier een vaste kleur.</div>
@@ -2894,20 +2894,26 @@ function drawGantt(doc, projectName, tasks, margin){
 
    doc.setFillColor(255,255,255);
    doc.rect(chartX, chartTop, labelW, chartH, "F");
-   doc.setFillColor(251,251,251);
-   doc.rect(barX, chartTop, barW, chartH, "F");
 
    doc.setDrawColor(210);
    doc.setFont("helvetica","normal");
    doc.setFontSize(6);
    doc.setTextColor(110);
-   const labelY = chartTop - 6;
+   const labelY = chartY + (chartBottom - chartY) / 2;
    const today = new Date();
    today.setHours(0,0,0,0);
    const dayWidth = barW / windowDays;
    for (let d=0; d<=windowDays; d++){
      const x = barX + (d/windowDays)*barW;
-     doc.line(x, chartY, x, chartBottom);
+    if (d < windowDays){
+      const dt = new Date(winStart);
+      dt.setDate(dt.getDate() + d);
+      if (dt.getDay() === 0 || dt.getDay() === 6){
+        doc.setFillColor(255,230,230);
+        doc.rect(x, chartY, dayWidth, chartBottom - chartY, "F");
+      }
+    }
+    doc.line(x, chartY, x, chartBottom);
      if (d < windowDays){
        const dt = new Date(winStart);
        dt.setDate(dt.getDate() + d);
@@ -2939,7 +2945,13 @@ function drawGantt(doc, projectName, tasks, margin){
    const winEnd = new Date(winStart);
    winEnd.setDate(winEnd.getDate() + windowDays);
 
-   const windowItems = ganttItems.filter(it => it.r.end > winStart && it.r.start < winEnd);
+   const windowItems = ganttItems
+     .filter(it => it.r.end > winStart && it.r.start < winEnd)
+     .sort((a, b) => {
+       const diff = a.r.start.getTime() - b.r.start.getTime();
+       if (diff !== 0) return diff;
+       return (a.t.created || 0) - (b.t.created || 0);
+     });
    if (!windowItems.length) continue;
 
    const rowH = 14;
