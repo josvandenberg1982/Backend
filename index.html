@@ -2911,14 +2911,20 @@ function drawGantt(doc, projectName, tasks, margin){
         doc.rect(x, chartY, dayWidth, chartBottom - chartY, "F");
       }
     }
-    doc.setDrawColor(220);
-    doc.line(x, chartY, x, chartBottom);
-    if (d < windowDays){
-      const dt = new Date(winStart);
-      dt.setDate(dt.getDate() + d);
-      const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
-      const midX = x + dayWidth / 2;
+   doc.setDrawColor(170);
+   doc.line(x, chartY, x, chartBottom);
+   if (d < windowDays){
+     const dt = new Date(winStart);
+     dt.setDate(dt.getDate() + d);
+     const txt = dt.toLocaleDateString("nl-NL",{ day:"2-digit", month:"2-digit" });
+     const midX = x + dayWidth / 2;
+      if (dt.getTime() === today.getTime()){
+        doc.setTextColor(176,0,32);
+      } else {
+        doc.setTextColor(110);
+      }
       doc.text(txt, midX + 1, labelY, { angle: 90 });
+      doc.setTextColor(110);
     }
   }
    doc.setTextColor(0);
@@ -2954,7 +2960,7 @@ function drawGantt(doc, projectName, tasks, margin){
      const frame = drawWindowFrame(winStart, winEnd, titleSuffix, chartBottom);
 
      let y = frame.chartY + 12;
-     doc.setDrawColor(232);
+    doc.setDrawColor(170);
 
      for (let i = 0; i < rowsThisPage; i++){
        const it = windowItems[index + i];
